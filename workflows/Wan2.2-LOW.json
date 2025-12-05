@@ -1,8 +1,8 @@
 {
   "id": "ec7da562-7e21-4dac-a0d2-f4441e1efd3b",
   "revision": 0,
-  "last_node_id": 91,
-  "last_link_id": 184,
+  "last_node_id": 92,
+  "last_link_id": 187,
   "nodes": [
     {
       "id": 65,
@@ -120,12 +120,12 @@
       "properties": {
         "cnr_id": "comfy-core",
         "ver": "0.3.75",
+        "Node name for S&R": "LoadImage",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
           "version": "7.5.1"
-        },
-        "Node name for S&R": "LoadImage"
+        }
       },
       "widgets_values": [
         "Arn-Van-Gogh-Secondary-1.webp",
@@ -185,12 +185,12 @@
       "properties": {
         "cnr_id": "comfy-core",
         "ver": "0.3.75",
+        "Node name for S&R": "LoadImage",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
           "version": "7.5.1"
-        },
-        "Node name for S&R": "LoadImage"
+        }
       },
       "widgets_values": [
         "original_3a930bdd-a01e-42d5-b8a4-8ebaf467384d.webp",
@@ -235,12 +235,12 @@
       "properties": {
         "cnr_id": "ComfyLiterals",
         "ver": "bdddb08ca82d90d75d97b1d437a652e0284a32ac",
+        "Node name for S&R": "String",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
           "version": "7.5.1"
-        },
-        "Node name for S&R": "String"
+        }
       },
       "widgets_values": [
         "zwxem portrait painting of a man"
@@ -284,12 +284,12 @@
       "properties": {
         "cnr_id": "ComfyLiterals",
         "ver": "bdddb08ca82d90d75d97b1d437a652e0284a32ac",
+        "Node name for S&R": "String",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
           "version": "7.5.1"
-        },
-        "Node name for S&R": "String"
+        }
       },
       "widgets_values": [
         "zwxem painting of a city under a starry night sky"
@@ -348,12 +348,12 @@
       "properties": {
         "cnr_id": "comfy-core",
         "ver": "0.3.75",
+        "Node name for S&R": "LoadImage",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
           "version": "7.5.1"
-        },
-        "Node name for S&R": "LoadImage"
+        }
       },
       "widgets_values": [
         "Starry-Night-canvas-Vincent-van-Gogh-New-1889.webp",
@@ -413,12 +413,12 @@
       "properties": {
         "cnr_id": "comfy-core",
         "ver": "0.3.75",
+        "Node name for S&R": "LoadImage",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
           "version": "7.5.1"
-        },
-        "Node name for S&R": "LoadImage"
+        }
       },
       "widgets_values": [
         "download (1).jpg",
@@ -463,12 +463,12 @@
       "properties": {
         "cnr_id": "ComfyLiterals",
         "ver": "bdddb08ca82d90d75d97b1d437a652e0284a32ac",
+        "Node name for S&R": "String",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
           "version": "7.5.1"
-        },
-        "Node name for S&R": "String"
+        }
       },
       "widgets_values": [
         "zwxem painting of corn field"
@@ -512,12 +512,12 @@
       "properties": {
         "cnr_id": "ComfyLiterals",
         "ver": "bdddb08ca82d90d75d97b1d437a652e0284a32ac",
+        "Node name for S&R": "String",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
           "version": "7.5.1"
-        },
-        "Node name for S&R": "String"
+        }
       },
       "widgets_values": [
         "zwxem painting of a tree in a field"
@@ -589,7 +589,7 @@
         46
       ],
       "flags": {},
-      "order": 25,
+      "order": 26,
       "mode": 0,
       "inputs": [
         {
@@ -771,7 +771,7 @@
       },
       "widgets_values": [
         "enable",
-        804275690373619,
+        180114138216712,
         "randomize",
         8,
         1,
@@ -794,7 +794,7 @@
         334
       ],
       "flags": {},
-      "order": 24,
+      "order": 25,
       "mode": 0,
       "inputs": [
         {
@@ -925,7 +925,7 @@
       },
       "widgets_values": [
         "disable",
-        1004459508459055,
+        1066192078850682,
         "randomize",
         8,
         1,
@@ -948,7 +948,7 @@
         164.31304931640625
       ],
       "flags": {},
-      "order": 15,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
@@ -1008,7 +1008,7 @@
         180.6060791015625
       ],
       "flags": {},
-      "order": 16,
+      "order": 17,
       "mode": 0,
       "inputs": [
         {
@@ -1068,7 +1068,7 @@
         130
       ],
       "flags": {},
-      "order": 11,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -1147,7 +1147,7 @@
         58
       ],
       "flags": {},
-      "order": 22,
+      "order": 20,
       "mode": 0,
       "inputs": [
         {
@@ -1200,10 +1200,10 @@
       ],
       "size": [
         836.44890241247,
-        991.817847900491
+        334
       ],
       "flags": {},
-      "order": 26,
+      "order": 27,
       "mode": 0,
       "inputs": [
         {
@@ -1334,11 +1334,12 @@
       "properties": {
         "cnr_id": "comfyui-videohelpersuite",
         "ver": "1.7.8",
+        "Node name for S&R": "VHS_VideoCombine",
         "ue_properties": {
           "widget_ue_connectable": {},
-          "input_ue_unconnectable": {}
-        },
-        "Node name for S&R": "VHS_VideoCombine"
+          "input_ue_unconnectable": {},
+          "version": "7.5.1"
+        }
       },
       "widgets_values": {
         "frame_rate": 8,
@@ -1370,7 +1371,7 @@
         106
       ],
       "flags": {},
-      "order": 12,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -1435,18 +1436,193 @@
       "ndPowerEnabled": false
     },
     {
+      "id": 90,
+      "type": "LoraLoaderModelOnly",
+      "pos": [
+        -800.508028542224,
+        298.9394956403991
+      ],
+      "size": [
+        306.2839073496459,
+        82
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 186
+        },
+        {
+          "localized_name": "lora_name",
+          "name": "lora_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "lora_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "strength_model",
+          "name": "strength_model",
+          "type": "FLOAT",
+          "widget": {
+            "name": "strength_model"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            179
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.75",
+        "Node name for S&R": "LoraLoaderModelOnly",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.5.1"
+        }
+      },
+      "widgets_values": [
+        "wan\\Wan2.2-Lightning_T2V-v1.1-A14B-4steps-lora_HIGH_fp16.safetensors",
+        1
+      ],
+      "ndSuperSelectorEnabled": false,
+      "ndPowerEnabled": false
+    },
+    {
+      "id": 56,
+      "type": "UNETLoader",
+      "pos": [
+        -1535.7299922689378,
+        -39.19595512067698
+      ],
+      "size": [
+        430,
+        82
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "unet_name",
+          "name": "unet_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "unet_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "weight_dtype",
+          "name": "weight_dtype",
+          "type": "COMBO",
+          "widget": {
+            "name": "weight_dtype"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "slot_index": 0,
+          "links": [
+            182
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.75",
+        "Node name for S&R": "UNETLoader",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.5.1",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors",
+        "default"
+      ],
+      "color": "#223",
+      "bgcolor": "#335",
+      "ndSuperSelectorEnabled": false,
+      "ndPowerEnabled": false
+    },
+    {
+      "id": 91,
+      "type": "ShowText|pysssss",
+      "pos": [
+        -1102.8561298055752,
+        619.4190248063273
+      ],
+      "size": [
+        253.14566331300148,
+        96.37108328003751
+      ],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "text",
+          "name": "text",
+          "type": "STRING",
+          "link": 180
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STRING",
+          "name": "STRING",
+          "shape": 6,
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "title": "Where The Lora is Saved",
+      "properties": {
+        "cnr_id": "comfyui-custom-scripts",
+        "ver": "1.2.5",
+        "Node name for S&R": "ShowText|pysssss",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.5.1"
+        }
+      },
+      "widgets_values": []
+    },
+    {
       "id": 55,
       "type": "ModelSamplingSD3",
       "pos": [
-        -277.924149631709,
-        513.1756399118734
+        -310.4811385168693,
+        495.1836197384955
       ],
       "size": [
         315,
         58
       ],
       "flags": {},
-      "order": 19,
+      "order": 24,
       "mode": 0,
       "inputs": [
         {
@@ -1491,41 +1667,35 @@
       ]
     },
     {
-      "id": 90,
-      "type": "LoraLoaderModelOnly",
+      "id": 37,
+      "type": "UNETLoader",
       "pos": [
-        -800.508028542224,
-        298.9394956403991
+        -1558.278120027692,
+        -188.00007511127797
       ],
       "size": [
-        306.2839073496459,
+        430,
         82
       ],
       "flags": {},
-      "order": 20,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "model",
-          "name": "model",
-          "type": "MODEL",
-          "link": 184
-        },
-        {
-          "localized_name": "lora_name",
-          "name": "lora_name",
+          "localized_name": "unet_name",
+          "name": "unet_name",
           "type": "COMBO",
           "widget": {
-            "name": "lora_name"
+            "name": "unet_name"
           },
           "link": null
         },
         {
-          "localized_name": "strength_model",
-          "name": "strength_model",
-          "type": "FLOAT",
+          "localized_name": "weight_dtype",
+          "name": "weight_dtype",
+          "type": "COMBO",
           "widget": {
-            "name": "strength_model"
+            "name": "weight_dtype"
           },
           "link": null
         }
@@ -1535,90 +1705,28 @@
           "localized_name": "MODEL",
           "name": "MODEL",
           "type": "MODEL",
+          "slot_index": 0,
           "links": [
-            179
+            185
           ]
         }
       ],
       "properties": {
         "cnr_id": "comfy-core",
         "ver": "0.3.75",
+        "Node name for S&R": "UNETLoader",
         "ue_properties": {
           "widget_ue_connectable": {},
+          "version": "7.5.1",
           "input_ue_unconnectable": {}
-        },
-        "Node name for S&R": "LoraLoaderModelOnly"
+        }
       },
       "widgets_values": [
-        "wan\\Wan2.2-Lightning_T2V-v1.1-A14B-4steps-lora_HIGH_fp16.safetensors",
-        1
+        "wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors",
+        "default"
       ],
-      "ndSuperSelectorEnabled": false,
-      "ndPowerEnabled": false
-    },
-    {
-      "id": 89,
-      "type": "LoraLoaderModelOnly",
-      "pos": [
-        -795.1411978708973,
-        424.5615620991239
-      ],
-      "size": [
-        305.2472242825131,
-        82
-      ],
-      "flags": {},
-      "order": 17,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "model",
-          "name": "model",
-          "type": "MODEL",
-          "link": 183
-        },
-        {
-          "localized_name": "lora_name",
-          "name": "lora_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "lora_name"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "strength_model",
-          "name": "strength_model",
-          "type": "FLOAT",
-          "widget": {
-            "name": "strength_model"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "MODEL",
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            177
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.75",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {}
-        },
-        "Node name for S&R": "LoraLoaderModelOnly"
-      },
-      "widgets_values": [
-        "wan\\Wan2.2-Lightning_T2V-v1.1-A14B-4steps-lora_LOW_fp16.safetensors",
-        1
-      ],
+      "color": "#223",
+      "bgcolor": "#335",
       "ndSuperSelectorEnabled": false,
       "ndPowerEnabled": false
     },
@@ -1634,7 +1742,7 @@
         492
       ],
       "flags": {},
-      "order": 14,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
@@ -1799,7 +1907,8 @@
           "name": "lora_path",
           "type": "STRING",
           "links": [
-            168
+            168,
+            187
           ]
         }
       ],
@@ -1808,14 +1917,15 @@
         "ver": "7c5d8e9358c7be1a4995a56fede6d8c3fd534616",
         "ue_properties": {
           "widget_ue_connectable": {},
-          "input_ue_unconnectable": {}
+          "input_ue_unconnectable": {},
+          "version": "7.5.1"
         }
       },
       "widgets_values": [
         4,
         null,
         "",
-        "Wan 2.2 High",
+        "Wan 2.2 Low",
         "S:\\Auto\\Aitoolkit\\ai-toolkit",
         "",
         500,
@@ -1823,131 +1933,98 @@
         16,
         "Low (768px)",
         true,
-        "My-Lora"
+        "MyWanLowLora"
       ],
       "ndSuperSelectorEnabled": false,
       "ndPowerEnabled": false
     },
     {
-      "id": 56,
-      "type": "UNETLoader",
-      "pos": [
-        -1535.7299922689378,
-        -39.19595512067698
-      ],
-      "size": [
-        430,
-        82
-      ],
-      "flags": {},
-      "order": 13,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "unet_name",
-          "name": "unet_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "unet_name"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "weight_dtype",
-          "name": "weight_dtype",
-          "type": "COMBO",
-          "widget": {
-            "name": "weight_dtype"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "MODEL",
-          "name": "MODEL",
-          "type": "MODEL",
-          "slot_index": 0,
-          "links": [
-            182
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.75",
-        "Node name for S&R": "UNETLoader",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.5.1",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors",
-        "default"
-      ],
-      "color": "#223",
-      "bgcolor": "#335",
-      "ndSuperSelectorEnabled": false,
-      "ndPowerEnabled": false
-    },
-    {
-      "id": 91,
-      "type": "ShowText|pysssss",
-      "pos": [
-        -1102.8561298055752,
-        619.4190248063273
-      ],
-      "size": [
-        253.14566331300148,
-        96.37108328003751
-      ],
-      "flags": {},
-      "order": 21,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "text",
-          "name": "text",
-          "type": "STRING",
-          "link": 180
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "STRING",
-          "name": "STRING",
-          "shape": 6,
-          "type": "STRING",
-          "links": null
-        }
-      ],
-      "title": "Where The Lora is Saved",
-      "properties": {
-        "cnr_id": "comfyui-custom-scripts",
-        "ver": "1.2.5",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.5.1"
-        },
-        "Node name for S&R": "ShowText|pysssss"
-      }
-    },
-    {
-      "id": 75,
+      "id": 92,
       "type": "ApplyTrainedLora",
       "pos": [
-        -1106.1995497590563,
-        421.59956320260494
+        -1085.6921418953375,
+        272.9477109219563
       ],
       "size": [
         270,
         98
       ],
       "flags": {},
-      "order": 18,
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 185
+        },
+        {
+          "localized_name": "lora_path",
+          "name": "lora_path",
+          "type": "STRING",
+          "link": 187
+        },
+        {
+          "localized_name": "strength",
+          "name": "strength",
+          "type": "FLOAT",
+          "widget": {
+            "name": "strength"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            186
+          ]
+        },
+        {
+          "localized_name": "lora_name",
+          "name": "lora_name",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "localized_name": "lora_path",
+          "name": "lora_path",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "title": "Apply Trained LoRA High",
+      "properties": {
+        "aux_id": "shootthesound/comfyUI-Realtime-Lora",
+        "ver": "7c5d8e9358c7be1a4995a56fede6d8c3fd534616",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.5.1"
+        },
+        "Node name for S&R": "ApplyTrainedLora"
+      },
+      "widgets_values": [
+        0
+      ]
+    },
+    {
+      "id": 75,
+      "type": "ApplyTrainedLora",
+      "pos": [
+        -1091.5489047607334,
+        423.8785524245658
+      ],
+      "size": [
+        270,
+        98
+      ],
+      "flags": {},
+      "order": 19,
       "mode": 0,
       "inputs": [
         {
@@ -1996,6 +2073,7 @@
           ]
         }
       ],
+      "title": "Apply Trained LoRA LOW",
       "properties": {
         "aux_id": "shootthesound/comfyUI-Realtime-Lora",
         "ver": "7c5d8e9358c7be1a4995a56fede6d8c3fd534616",
@@ -2011,35 +2089,41 @@
       ]
     },
     {
-      "id": 37,
-      "type": "UNETLoader",
+      "id": 89,
+      "type": "LoraLoaderModelOnly",
       "pos": [
-        -1537.7158112581167,
-        -182.8594979188842
+        -760.0139203895397,
+        441.6968194071036
       ],
       "size": [
-        430,
+        305.2472242825131,
         82
       ],
       "flags": {},
-      "order": 10,
+      "order": 21,
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "unet_name",
-          "name": "unet_name",
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 183
+        },
+        {
+          "localized_name": "lora_name",
+          "name": "lora_name",
           "type": "COMBO",
           "widget": {
-            "name": "unet_name"
+            "name": "lora_name"
           },
           "link": null
         },
         {
-          "localized_name": "weight_dtype",
-          "name": "weight_dtype",
-          "type": "COMBO",
+          "localized_name": "strength_model",
+          "name": "strength_model",
+          "type": "FLOAT",
           "widget": {
-            "name": "weight_dtype"
+            "name": "strength_model"
           },
           "link": null
         }
@@ -2049,28 +2133,25 @@
           "localized_name": "MODEL",
           "name": "MODEL",
           "type": "MODEL",
-          "slot_index": 0,
           "links": [
-            184
+            177
           ]
         }
       ],
       "properties": {
         "cnr_id": "comfy-core",
         "ver": "0.3.75",
-        "Node name for S&R": "UNETLoader",
+        "Node name for S&R": "LoraLoaderModelOnly",
         "ue_properties": {
           "widget_ue_connectable": {},
-          "version": "7.5.1",
-          "input_ue_unconnectable": {}
+          "input_ue_unconnectable": {},
+          "version": "7.5.1"
         }
       },
       "widgets_values": [
-        "wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors",
-        "default"
+        "wan\\Wan2.2-Lightning_T2V-v1.1-A14B-4steps-lora_LOW_fp16.safetensors",
+        1
       ],
-      "color": "#223",
-      "bgcolor": "#335",
       "ndSuperSelectorEnabled": false,
       "ndPowerEnabled": false
     }
@@ -2293,22 +2374,38 @@
       "MODEL"
     ],
     [
-      184,
+      185,
       37,
+      0,
+      92,
+      0,
+      "MODEL"
+    ],
+    [
+      186,
+      92,
       0,
       90,
       0,
       "MODEL"
+    ],
+    [
+      187,
+      77,
+      0,
+      92,
+      1,
+      "STRING"
     ]
   ],
   "groups": [],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1.1671841070450104,
+      "scale": 1.1671841070450026,
       "offset": [
-        1917.7619376693558,
-        134.3220705309309
+        1576.6398451380783,
+        296.65017766422335
       ]
     },
     "frontendVersion": "1.23.4",
