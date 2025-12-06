@@ -196,9 +196,9 @@ class SDXLLoraTrainer:
                 }),
                 "learning_rate": ("FLOAT", {
                     "default": saved.get('learning_rate', 0.0005),
-                    "min": 0.000001,
+                    "min": 0.00001,
                     "max": 0.1,
-                    "step": 0.00001,
+                    "step": 0.0001,
                     "tooltip": "Learning rate. 0.0005 trains fast but may overshoot. Experiment with lowering for more stable/slower training."
                 }),
                 "lora_rank": ("INT", {
