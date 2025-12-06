@@ -494,6 +494,10 @@ class RealtimeLoraTrainer:
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
+            # Set UTF-8 encoding for subprocess to handle non-ASCII output
+            env = os.environ.copy()
+            env['PYTHONIOENCODING'] = 'utf-8'
+
             process = subprocess.Popen(
                 [venv_python, run_script, config_path],
                 stdout=subprocess.PIPE,
@@ -503,7 +507,8 @@ class RealtimeLoraTrainer:
                 errors='replace',
                 bufsize=1,
                 startupinfo=startupinfo,
-                cwd=ai_toolkit_path
+                cwd=ai_toolkit_path,
+                env=env,
             )
 
             # Stream output for progress visibility

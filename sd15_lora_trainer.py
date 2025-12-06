@@ -460,6 +460,10 @@ class SD15LoraTrainer:
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
+            # Set UTF-8 encoding for subprocess to handle Japanese text in sd-scripts
+            env = os.environ.copy()
+            env['PYTHONIOENCODING'] = 'utf-8'
+
             process = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
@@ -469,6 +473,7 @@ class SD15LoraTrainer:
                 errors='replace',
                 cwd=sd_scripts_path,
                 startupinfo=startupinfo,
+                env=env,
             )
 
             # Stream output
