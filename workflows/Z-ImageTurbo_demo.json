@@ -572,67 +572,6 @@
       "bgcolor": "#533"
     },
     {
-      "id": 71,
-      "type": "ApplyTrainedLora",
-      "pos": [
-        -350.4077089585382,
-        -371.40277510718965
-      ],
-      "size": [
-        270,
-        98
-      ],
-      "flags": {},
-      "order": 16,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "link": 143
-        },
-        {
-          "name": "lora_path",
-          "type": "STRING",
-          "link": 160
-        }
-      ],
-      "outputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "links": [
-            142
-          ]
-        },
-        {
-          "name": "lora_name",
-          "type": "STRING",
-          "links": [
-            149
-          ]
-        },
-        {
-          "name": "lora_path",
-          "type": "STRING",
-          "links": null
-        }
-      ],
-      "properties": {
-        "aux_id": "shootthesound/comfyUI-Realtime-Lora",
-        "ver": "7c5d8e9358c7be1a4995a56fede6d8c3fd534616",
-        "Node name for S&R": "ApplyTrainedLora",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.5.1"
-        }
-      },
-      "widgets_values": [
-        1.24
-      ]
-    },
-    {
       "id": 70,
       "type": "ModelSamplingAuraFlow",
       "pos": [
@@ -1024,7 +963,7 @@
         "S:\\Auto\\Aitoolkit\\ai-toolkit",
         "",
         500,
-        0.0002,
+        0.0003,
         16,
         "Low (768px)",
         true,
@@ -1032,6 +971,67 @@
       ],
       "ndSuperSelectorEnabled": false,
       "ndPowerEnabled": false
+    },
+    {
+      "id": 71,
+      "type": "ApplyTrainedLora",
+      "pos": [
+        -350.4077089585382,
+        -371.40277510718965
+      ],
+      "size": [
+        270,
+        98
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 143
+        },
+        {
+          "name": "lora_path",
+          "type": "STRING",
+          "link": 160
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            142
+          ]
+        },
+        {
+          "name": "lora_name",
+          "type": "STRING",
+          "links": [
+            149
+          ]
+        },
+        {
+          "name": "lora_path",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "shootthesound/comfyUI-Realtime-Lora",
+        "ver": "7c5d8e9358c7be1a4995a56fede6d8c3fd534616",
+        "Node name for S&R": "ApplyTrainedLora",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.5.1"
+        }
+      },
+      "widgets_values": [
+        1
+      ]
     }
   ],
   "links": [
@@ -1208,10 +1208,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1.2839025177495054,
+      "scale": 0.8769226950000013,
       "offset": [
-        1399.9776384701884,
-        -3.558911238528367
+        1763.3483000431077,
+        486.9642941208215
       ]
     },
     "frontendVersion": "1.32.9",
