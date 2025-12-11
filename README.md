@@ -19,6 +19,9 @@ If this node saves you time or helps your workflow, consider [buying me a coffee
 - SDXL (any checkpoint) - tested with Juggernaut XL Ragnarok, base SDXL will work too
 - SD 1.5 (any checkpoint) - blazingly fast, ~2 mins for 500 steps on a 5090
 
+**Via Musubi Tuner (Recommended for Z-Image):**
+- Z-Image - faster training, smaller LoRA files, no diffusers dependency. Requires the de-distilled model for training, but trained LoRAs work with the regular distilled Z-Image Turbo model.
+
 **Via AI-Toolkit:**
 - Z-Image Turbo
 - FLUX.1-dev
@@ -37,9 +40,16 @@ You need to install the training backend(s) separately:
 **For SDXL / SD 1.5 training:**
 1. Install sd-scripts: https://github.com/kohya-ss/sd-scripts
 2. Follow their install instructions
-3. Run `accelerate config` in the venv (just press Enter to accept defaults for each question)
 
-**For FLUX/Z-Image/Wan training:**
+**For Z-Image training (Musubi Tuner - Recommended):**
+1. Install Musubi Tuner: https://github.com/kohya-ss/musubi-tuner
+2. Follow their install instructions
+3. Download the de-distilled Z-Image model for training:
+   - Get it from: https://huggingface.co/ostris/Z-Image-De-Turbo/tree/main
+   - Save to your ComfyUI `models/diffusion_models` folder
+   - Note: This model is only needed for training. Your trained LoRAs will work with the regular distilled Z-Image Turbo model.
+
+**For FLUX/Z-Image/Wan training (AI-Toolkit):**
 1. Install AI-Toolkit: https://github.com/ostris/ai-toolkit
 2. Follow their install instructions
 
@@ -63,6 +73,7 @@ Restart ComfyUI.
 Search for these in ComfyUI:
 
 - **Realtime LoRA Trainer** - Trains using AI-Toolkit (FLUX, Z-Image, Wan)
+- **Realtime LoRA Trainer (Z-Image - Musubi Tuner)** - Trains Z-Image using Musubi Tuner (recommended)
 - **Realtime LoRA Trainer (SDXL - sd-scripts)** - Trains using sd-scripts (SDXL)
 - **Realtime LoRA Trainer (SD 1.5 - sd-scripts)** - Trains using sd-scripts (SD 1.5)
 - **Apply Trained LoRA** - Applies the trained LoRA to your model
@@ -115,6 +126,7 @@ This project is a thin wrapper that calls these excellent training tools:
 
 - **AI-Toolkit** by ostris: https://github.com/ostris/ai-toolkit
 - **sd-scripts** by kohya-ss: https://github.com/kohya-ss/sd-scripts
+- **Musubi Tuner** by kohya-ss: https://github.com/kohya-ss/musubi-tuner
 
 All the heavy lifting is done by these projects. This node just makes them accessible from within ComfyUI.
 
