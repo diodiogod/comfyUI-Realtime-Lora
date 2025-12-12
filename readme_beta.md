@@ -12,10 +12,10 @@ Capture a face, a style, or a subject from your reference images and apply it to
 | Backend | Models | Best For |
 |---------|--------|----------|
 | **sd-scripts** | SDXL, SD 1.5 | Fast training, mature workflows, broad checkpoint compatibility |
-| **Musubi Tuner** | Z-Image, Qwen Image, Qwen Image Edit, Wan 2.2 | Cutting-edge models, smaller LoRAs, excellent VRAM efficiency |
-| **AI-Toolkit** | FLUX.1-dev, Z-Image, Wan 2.2 alternative training pipeline |
+| **Musubi Tuner** | Z-Image, Qwen Image, Wan 2.2 | Cutting-edge models, smaller LoRAs, excellent VRAM efficiency |
+| **AI-Toolkit** | FLUX.1-dev, Z-Image, Wan 2.2 | FLUX support, alternative training pipeline |
 
-**7 architectures. 3 training backends. 8 trainer nodes.**
+**6+ architectures. 3 training backends. 8 trainer nodes.**
 
 ## Use Cases
 
@@ -69,13 +69,13 @@ You need to install the training backend(s) separately:
 
    **Z-Image:** Download the de-distilled model from https://huggingface.co/ostris/Z-Image-De-Turbo/tree/main - save to `models/diffusion_models`. Your trained LoRAs will work with the regular distilled Z-Image Turbo model.
 
-   **Qwen Image:** Download bf16 models (not fp8) from Comfy-Org or from the links in the exampe workflows:
+   **Qwen Image:** Download bf16 models (not fp8) from Comfy-Org:
    - DiT: https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI (qwen_image_bf16.safetensors) or https://huggingface.co/Comfy-Org/Qwen-Image-Edit_ComfyUI for Edit models
    - VAE: qwen_image_vae.safetensors
    - Text Encoder: qwen_2.5_vl_7b.safetensors (from clip folder)
    - Note: Pre-quantized fp8 models don't work for training - use bf16 versions.
 
-   **Wan 2.2:** Download fp16 models from Comfy-Org or from the links in the exampe workflows:
+   **Wan 2.2:** Download fp16 models from Comfy-Org:
    - DiT: wan2.2_t2v_14B_fp16.safetensors (High or Low noise variant)
    - VAE: wan_2.2_vae.safetensors
    - T5: models_t5_umt5-xxl-enc-bf16.pth
@@ -84,9 +84,9 @@ You need to install the training backend(s) separately:
 1. Install AI-Toolkit: https://github.com/ostris/ai-toolkit
 2. Follow their install instructions
 
-**RTX 50-series GPUs (AI-Toolkit only):** Blackwell GPUs (RTX 5080/5090) require PyTorch 2.7+ with CUDA 12.8 support. The standard AI-Toolkit installation may not work out of the box. A community installer is available at https://github.com/omgitsgb/ostris-ai-toolkit-50gpu-installer that handles the correct PyTorch/CUDA versions. Note: sd-scripts for SDXL/SD1.5 training & Musubi Training is unaffected - this applies only to AI-Toolkit.
+**RTX 50-series GPUs (AI-Toolkit only):** Blackwell GPUs (RTX 5080/5090) require PyTorch 2.7+ with CUDA 12.8 support. The standard AI-Toolkit installation may not work out of the box. A community installer is available at https://github.com/omgitsgb/ostris-ai-toolkit-50gpu-installer that handles the correct PyTorch/CUDA versions. Note: sd-scripts for SDXL training is unaffected - this applies only to AI-Toolkit.
 
-You don't need to open the training environments after installation. The node just needs the path to where you installed them.
+You don't need to open either environment after installation. The node just needs the path to where you installed them.
 
 ## Installation
 
@@ -114,7 +114,7 @@ Search for these in ComfyUI:
 
 ## Getting Started
 
-There are critical example workflows with useful info included in the custom_nodes/comfyUI-Realtime-Lora folder. Open one in ComfyUI and:
+There are example workflows included in the custom_nodes/comfyUI-Realtime-Lora folder. Open one in ComfyUI and:
 
 1. Paste the path to your training backend installation (sd-scripts, Musubi Tuner, or AI-Toolkit)
 2. For SDXL/SD1.5: select your checkpoint from the dropdown
@@ -153,17 +153,17 @@ These defaults are starting points for experimentation, not ideal values. Every 
 - 0.0002 trains fast but can overshoot, causing artifacts or burning in the subject too hard
 - Try lowering to 0.0001 or 0.00005 for more stable, gradual training
 - If your LoRA looks overcooked or the subject bleeds into everything, lower the learning rate
-- If your LoRA is too weak after 400-500 steps, try more steps before raising the learning rate, its already high in the example workflows.
+- If your LoRA is too weak after 400 steps, try more steps before raising the learning rate
 
 ## Credits
 
-This project is a usbility wrapper that calls these excellent training tools:
+This project is a thin wrapper that calls these excellent training tools:
 
 - **AI-Toolkit** by ostris: https://github.com/ostris/ai-toolkit
 - **sd-scripts** by kohya-ss: https://github.com/kohya-ss/sd-scripts
 - **Musubi Tuner** by kohya-ss: https://github.com/kohya-ss/musubi-tuner
 
-The training is done by these projects. This node just makes them accessible from within ComfyUI in a user centric manner. Essentially i want to democratize training and make it easier to get into creativly.
+All the heavy lifting is done by these projects. This node just makes them accessible from within ComfyUI.
 
 ## Author
 
