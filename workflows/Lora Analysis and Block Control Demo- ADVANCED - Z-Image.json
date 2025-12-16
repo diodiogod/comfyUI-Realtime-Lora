@@ -1,8 +1,8 @@
 {
   "id": "92112d97-bb64-4b44-86f2-ea5691ef8f6e",
   "revision": 0,
-  "last_node_id": 98,
-  "last_link_id": 215,
+  "last_node_id": 99,
+  "last_link_id": 220,
   "nodes": [
     {
       "id": 72,
@@ -18,38 +18,9 @@
       "flags": {},
       "order": 0,
       "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "width",
-          "name": "width",
-          "type": "INT",
-          "widget": {
-            "name": "width"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "height",
-          "name": "height",
-          "type": "INT",
-          "widget": {
-            "name": "height"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "batch_size",
-          "name": "batch_size",
-          "type": "INT",
-          "widget": {
-            "name": "batch_size"
-          },
-          "link": null
-        }
-      ],
+      "inputs": [],
       "outputs": [
         {
-          "localized_name": "LATENT",
           "name": "LATENT",
           "type": "LATENT",
           "slot_index": 0,
@@ -88,20 +59,9 @@
       "flags": {},
       "order": 1,
       "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "vae_name",
-          "name": "vae_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "vae_name"
-          },
-          "link": null
-        }
-      ],
+      "inputs": [],
       "outputs": [
         {
-          "localized_name": "VAE",
           "name": "VAE",
           "type": "VAE",
           "links": [
@@ -141,13 +101,11 @@
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "samples",
           "name": "samples",
           "type": "LATENT",
           "link": 146
         },
         {
-          "localized_name": "vae",
           "name": "vae",
           "type": "VAE",
           "link": 147
@@ -155,7 +113,6 @@
       ],
       "outputs": [
         {
-          "localized_name": "IMAGE",
           "name": "IMAGE",
           "type": "IMAGE",
           "slot_index": 0,
@@ -192,87 +149,28 @@
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "model",
           "name": "model",
           "type": "MODEL",
           "link": 137
         },
         {
-          "localized_name": "positive",
           "name": "positive",
           "type": "CONDITIONING",
           "link": 138
         },
         {
-          "localized_name": "negative",
           "name": "negative",
           "type": "CONDITIONING",
           "link": 139
         },
         {
-          "localized_name": "latent_image",
           "name": "latent_image",
           "type": "LATENT",
           "link": 140
-        },
-        {
-          "localized_name": "seed",
-          "name": "seed",
-          "type": "INT",
-          "widget": {
-            "name": "seed"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "steps",
-          "name": "steps",
-          "type": "INT",
-          "widget": {
-            "name": "steps"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "cfg",
-          "name": "cfg",
-          "type": "FLOAT",
-          "widget": {
-            "name": "cfg"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "sampler_name",
-          "name": "sampler_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "sampler_name"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "scheduler",
-          "name": "scheduler",
-          "type": "COMBO",
-          "widget": {
-            "name": "scheduler"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "denoise",
-          "name": "denoise",
-          "type": "FLOAT",
-          "widget": {
-            "name": "denoise"
-          },
-          "link": null
         }
       ],
       "outputs": [
         {
-          "localized_name": "LATENT",
           "name": "LATENT",
           "type": "LATENT",
           "slot_index": 0,
@@ -317,24 +215,13 @@
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "clip",
           "name": "clip",
           "type": "CLIP",
           "link": 144
-        },
-        {
-          "localized_name": "text",
-          "name": "text",
-          "type": "STRING",
-          "widget": {
-            "name": "text"
-          },
-          "link": null
         }
       ],
       "outputs": [
         {
-          "localized_name": "CONDITIONING",
           "name": "CONDITIONING",
           "type": "CONDITIONING",
           "slot_index": 0,
@@ -376,7 +263,6 @@
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "anything",
           "name": "anything",
           "shape": 7,
           "type": "*",
@@ -385,7 +271,6 @@
       ],
       "outputs": [
         {
-          "localized_name": "output",
           "name": "output",
           "type": "*",
           "links": null
@@ -406,81 +291,6 @@
       ]
     },
     {
-      "id": 76,
-      "type": "CLIPLoader",
-      "pos": [
-        -3029.461722643861,
-        -1162.995322720111
-      ],
-      "size": [
-        404.76879872725476,
-        106
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "clip_name",
-          "name": "clip_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "clip_name"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "type",
-          "name": "type",
-          "type": "COMBO",
-          "widget": {
-            "name": "type"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "device",
-          "name": "device",
-          "shape": 7,
-          "type": "COMBO",
-          "widget": {
-            "name": "device"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "CLIP",
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            144,
-            179,
-            192,
-            211
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.75",
-        "Node name for S&R": "CLIPLoader",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.5.1",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "qwen_3_4b.safetensors",
-        "lumina2",
-        "default"
-      ],
-      "ndSuperSelectorEnabled": false,
-      "ndPowerEnabled": false
-    },
-    {
       "id": 77,
       "type": "UNETLoader",
       "pos": [
@@ -492,37 +302,17 @@
         94.44019680559268
       ],
       "flags": {},
-      "order": 3,
+      "order": 2,
       "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "unet_name",
-          "name": "unet_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "unet_name"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "weight_dtype",
-          "name": "weight_dtype",
-          "type": "COMBO",
-          "widget": {
-            "name": "weight_dtype"
-          },
-          "link": null
-        }
-      ],
+      "inputs": [],
       "outputs": [
         {
-          "localized_name": "MODEL",
           "name": "MODEL",
           "type": "MODEL",
           "links": [
             177,
-            210,
-            212
+            212,
+            216
           ]
         }
       ],
@@ -559,60 +349,28 @@
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "model",
           "name": "model",
           "type": "MODEL",
           "link": 177
         },
         {
-          "localized_name": "clip",
           "name": "clip",
           "type": "CLIP",
           "link": 179
-        },
-        {
-          "localized_name": "lora_name",
-          "name": "lora_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "lora_name"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "strength_model",
-          "name": "strength_model",
-          "type": "FLOAT",
-          "widget": {
-            "name": "strength_model"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "strength_clip",
-          "name": "strength_clip",
-          "type": "FLOAT",
-          "widget": {
-            "name": "strength_clip"
-          },
-          "link": null
         }
       ],
       "outputs": [
         {
-          "localized_name": "model",
           "name": "model",
           "type": "MODEL",
           "links": null
         },
         {
-          "localized_name": "clip",
           "name": "clip",
           "type": "CLIP",
           "links": null
         },
         {
-          "localized_name": "analysis",
           "name": "analysis",
           "type": "STRING",
           "links": [
@@ -620,15 +378,13 @@
           ]
         },
         {
-          "localized_name": "analysis_json",
           "name": "analysis_json",
           "type": "STRING",
           "links": [
-            194
+            217
           ]
         },
         {
-          "localized_name": "lora_path",
           "name": "lora_path",
           "type": "STRING",
           "links": []
@@ -653,65 +409,6 @@
       "ndPowerEnabled": false
     },
     {
-      "id": 74,
-      "type": "CLIPTextEncode",
-      "pos": [
-        -3031.894865575872,
-        -2300.345274600707
-      ],
-      "size": [
-        423.83001708984375,
-        177.11770629882812
-      ],
-      "flags": {},
-      "order": 14,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "clip",
-          "name": "clip",
-          "type": "CLIP",
-          "link": 208
-        },
-        {
-          "localized_name": "text",
-          "name": "text",
-          "type": "STRING",
-          "widget": {
-            "name": "text"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "CONDITIONING",
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "slot_index": 0,
-          "links": [
-            138
-          ]
-        }
-      ],
-      "title": "CLIP Text Encode (Positive Prompt)",
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.75",
-        "Node name for S&R": "CLIPTextEncode",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.5.1",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "portrait photo of GlaraH woman soldier. She is carrying an axe, held high in a threatening manner in her right hand.  The location is a sewer. She is walking towards the camera, her feet spashing in the sewage. In her left hand a torch casting a hazy beam at the viewer. Behind her we can see a pile of dead zombies that she has killed moments before.\n"
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
-    },
-    {
       "id": 95,
       "type": "Note",
       "pos": [
@@ -723,7 +420,7 @@
         88
       ],
       "flags": {},
-      "order": 4,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -742,738 +439,6 @@
       "bgcolor": "#653"
     },
     {
-      "id": 96,
-      "type": "ZImageSelectiveLoRALoader",
-      "pos": [
-        -2040.2440902241199,
-        -2022.620558144311
-      ],
-      "size": [
-        500,
-        910
-      ],
-      "flags": {},
-      "order": 12,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "model",
-          "name": "model",
-          "type": "MODEL",
-          "link": 207
-        },
-        {
-          "localized_name": "clip",
-          "name": "clip",
-          "type": "CLIP",
-          "link": 209
-        },
-        {
-          "localized_name": "lora_path_opt",
-          "name": "lora_path_opt",
-          "shape": 7,
-          "type": "STRING",
-          "link": null
-        },
-        {
-          "localized_name": "analysis_json",
-          "name": "analysis_json",
-          "shape": 7,
-          "type": "STRING",
-          "link": 215
-        },
-        {
-          "localized_name": "lora_name",
-          "name": "lora_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "lora_name"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "strength",
-          "name": "strength",
-          "type": "FLOAT",
-          "widget": {
-            "name": "strength"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "preset",
-          "name": "preset",
-          "type": "COMBO",
-          "widget": {
-            "name": "preset"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_0",
-          "name": "layer_0",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_0"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_0_str",
-          "name": "layer_0_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_0_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_1",
-          "name": "layer_1",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_1"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_1_str",
-          "name": "layer_1_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_1_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_2",
-          "name": "layer_2",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_2"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_2_str",
-          "name": "layer_2_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_2_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_3",
-          "name": "layer_3",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_3"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_3_str",
-          "name": "layer_3_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_3_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_4",
-          "name": "layer_4",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_4"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_4_str",
-          "name": "layer_4_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_4_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_5",
-          "name": "layer_5",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_5"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_5_str",
-          "name": "layer_5_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_5_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_6",
-          "name": "layer_6",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_6"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_6_str",
-          "name": "layer_6_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_6_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_7",
-          "name": "layer_7",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_7"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_7_str",
-          "name": "layer_7_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_7_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_8",
-          "name": "layer_8",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_8"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_8_str",
-          "name": "layer_8_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_8_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_9",
-          "name": "layer_9",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_9"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_9_str",
-          "name": "layer_9_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_9_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_10",
-          "name": "layer_10",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_10"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_10_str",
-          "name": "layer_10_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_10_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_11",
-          "name": "layer_11",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_11"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_11_str",
-          "name": "layer_11_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_11_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_12",
-          "name": "layer_12",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_12"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_12_str",
-          "name": "layer_12_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_12_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_13",
-          "name": "layer_13",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_13"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_13_str",
-          "name": "layer_13_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_13_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_14",
-          "name": "layer_14",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_14"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_14_str",
-          "name": "layer_14_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_14_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_15",
-          "name": "layer_15",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_15"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_15_str",
-          "name": "layer_15_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_15_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_16",
-          "name": "layer_16",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_16"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_16_str",
-          "name": "layer_16_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_16_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_17",
-          "name": "layer_17",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_17"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_17_str",
-          "name": "layer_17_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_17_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_18",
-          "name": "layer_18",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_18"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_18_str",
-          "name": "layer_18_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_18_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_19",
-          "name": "layer_19",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_19"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_19_str",
-          "name": "layer_19_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_19_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_20",
-          "name": "layer_20",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_20"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_20_str",
-          "name": "layer_20_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_20_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_21",
-          "name": "layer_21",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_21"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_21_str",
-          "name": "layer_21_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_21_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_22",
-          "name": "layer_22",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_22"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_22_str",
-          "name": "layer_22_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_22_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_23",
-          "name": "layer_23",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_23"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_23_str",
-          "name": "layer_23_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_23_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_24",
-          "name": "layer_24",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_24"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_24_str",
-          "name": "layer_24_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_24_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_25",
-          "name": "layer_25",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_25"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_25_str",
-          "name": "layer_25_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_25_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_26",
-          "name": "layer_26",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_26"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_26_str",
-          "name": "layer_26_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_26_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_27",
-          "name": "layer_27",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_27"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_27_str",
-          "name": "layer_27_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_27_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_28",
-          "name": "layer_28",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_28"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_28_str",
-          "name": "layer_28_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_28_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_29",
-          "name": "layer_29",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_29"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_29_str",
-          "name": "layer_29_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_29_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "other_weights",
-          "name": "other_weights",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "other_weights"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "other_weights_str",
-          "name": "other_weights_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "other_weights_str"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "model",
-          "name": "model",
-          "type": "MODEL",
-          "links": [
-            206
-          ]
-        },
-        {
-          "localized_name": "clip",
-          "name": "clip",
-          "type": "CLIP",
-          "links": [
-            208
-          ]
-        },
-        {
-          "localized_name": "info",
-          "name": "info",
-          "type": "STRING",
-          "links": null
-        }
-      ],
-      "properties": {
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.5.1"
-        },
-        "aux_id": "ShootTheSound/comfyUI-Realtime-Lora",
-        "ver": "3baddd9117f8c4bafb625d7160ee72a921adaacf",
-        "Node name for S&R": "ZImageSelectiveLoRALoader"
-      },
-      "widgets_values": [
-        "zimage\\GlaraH.safetensors",
-        1,
-        "Mid-Late (15-29)",
-        "Custom",
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        false,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1
-      ],
-      "ndSuperSelectorEnabled": false,
-      "ndPowerEnabled": false
-    },
-    {
       "id": 70,
       "type": "ModelSamplingAuraFlow",
       "pos": [
@@ -1489,24 +454,13 @@
       "mode": 4,
       "inputs": [
         {
-          "localized_name": "model",
           "name": "model",
           "type": "MODEL",
           "link": 206
-        },
-        {
-          "localized_name": "shift",
-          "name": "shift",
-          "type": "FLOAT",
-          "widget": {
-            "name": "shift"
-          },
-          "link": null
         }
       ],
       "outputs": [
         {
-          "localized_name": "MODEL",
           "name": "MODEL",
           "type": "MODEL",
           "slot_index": 0,
@@ -1545,19 +499,9 @@
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "images",
           "name": "images",
           "type": "IMAGE",
           "link": 148
-        },
-        {
-          "localized_name": "filename_prefix",
-          "name": "filename_prefix",
-          "type": "STRING",
-          "widget": {
-            "name": "filename_prefix"
-          },
-          "link": null
         }
       ],
       "outputs": [],
@@ -1576,738 +520,6 @@
       ]
     },
     {
-      "id": 88,
-      "type": "ZImageSelectiveLoRALoader",
-      "pos": [
-        -2579.6127440083615,
-        -2026.3661716330776
-      ],
-      "size": [
-        500,
-        910
-      ],
-      "flags": {},
-      "order": 10,
-      "mode": 0,
-      "inputs": [
-        {
-          "localized_name": "model",
-          "name": "model",
-          "type": "MODEL",
-          "link": 210
-        },
-        {
-          "localized_name": "clip",
-          "name": "clip",
-          "type": "CLIP",
-          "link": 192
-        },
-        {
-          "localized_name": "lora_path_opt",
-          "name": "lora_path_opt",
-          "shape": 7,
-          "type": "STRING",
-          "link": null
-        },
-        {
-          "localized_name": "analysis_json",
-          "name": "analysis_json",
-          "shape": 7,
-          "type": "STRING",
-          "link": 194
-        },
-        {
-          "localized_name": "lora_name",
-          "name": "lora_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "lora_name"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "strength",
-          "name": "strength",
-          "type": "FLOAT",
-          "widget": {
-            "name": "strength"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "preset",
-          "name": "preset",
-          "type": "COMBO",
-          "widget": {
-            "name": "preset"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_0",
-          "name": "layer_0",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_0"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_0_str",
-          "name": "layer_0_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_0_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_1",
-          "name": "layer_1",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_1"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_1_str",
-          "name": "layer_1_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_1_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_2",
-          "name": "layer_2",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_2"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_2_str",
-          "name": "layer_2_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_2_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_3",
-          "name": "layer_3",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_3"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_3_str",
-          "name": "layer_3_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_3_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_4",
-          "name": "layer_4",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_4"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_4_str",
-          "name": "layer_4_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_4_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_5",
-          "name": "layer_5",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_5"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_5_str",
-          "name": "layer_5_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_5_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_6",
-          "name": "layer_6",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_6"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_6_str",
-          "name": "layer_6_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_6_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_7",
-          "name": "layer_7",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_7"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_7_str",
-          "name": "layer_7_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_7_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_8",
-          "name": "layer_8",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_8"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_8_str",
-          "name": "layer_8_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_8_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_9",
-          "name": "layer_9",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_9"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_9_str",
-          "name": "layer_9_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_9_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_10",
-          "name": "layer_10",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_10"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_10_str",
-          "name": "layer_10_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_10_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_11",
-          "name": "layer_11",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_11"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_11_str",
-          "name": "layer_11_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_11_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_12",
-          "name": "layer_12",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_12"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_12_str",
-          "name": "layer_12_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_12_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_13",
-          "name": "layer_13",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_13"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_13_str",
-          "name": "layer_13_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_13_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_14",
-          "name": "layer_14",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_14"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_14_str",
-          "name": "layer_14_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_14_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_15",
-          "name": "layer_15",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_15"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_15_str",
-          "name": "layer_15_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_15_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_16",
-          "name": "layer_16",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_16"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_16_str",
-          "name": "layer_16_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_16_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_17",
-          "name": "layer_17",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_17"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_17_str",
-          "name": "layer_17_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_17_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_18",
-          "name": "layer_18",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_18"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_18_str",
-          "name": "layer_18_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_18_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_19",
-          "name": "layer_19",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_19"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_19_str",
-          "name": "layer_19_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_19_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_20",
-          "name": "layer_20",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_20"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_20_str",
-          "name": "layer_20_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_20_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_21",
-          "name": "layer_21",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_21"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_21_str",
-          "name": "layer_21_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_21_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_22",
-          "name": "layer_22",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_22"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_22_str",
-          "name": "layer_22_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_22_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_23",
-          "name": "layer_23",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_23"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_23_str",
-          "name": "layer_23_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_23_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_24",
-          "name": "layer_24",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_24"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_24_str",
-          "name": "layer_24_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_24_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_25",
-          "name": "layer_25",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_25"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_25_str",
-          "name": "layer_25_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_25_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_26",
-          "name": "layer_26",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_26"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_26_str",
-          "name": "layer_26_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_26_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_27",
-          "name": "layer_27",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_27"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_27_str",
-          "name": "layer_27_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_27_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_28",
-          "name": "layer_28",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_28"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_28_str",
-          "name": "layer_28_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_28_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_29",
-          "name": "layer_29",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "layer_29"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "layer_29_str",
-          "name": "layer_29_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "layer_29_str"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "other_weights",
-          "name": "other_weights",
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "other_weights"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "other_weights_str",
-          "name": "other_weights_str",
-          "type": "FLOAT",
-          "widget": {
-            "name": "other_weights_str"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "localized_name": "model",
-          "name": "model",
-          "type": "MODEL",
-          "links": [
-            207
-          ]
-        },
-        {
-          "localized_name": "clip",
-          "name": "clip",
-          "type": "CLIP",
-          "links": [
-            209
-          ]
-        },
-        {
-          "localized_name": "info",
-          "name": "info",
-          "type": "STRING",
-          "links": null
-        }
-      ],
-      "properties": {
-        "aux_id": "ShootTheSound/comfyUI-Realtime-Lora",
-        "ver": "3baddd9117f8c4bafb625d7160ee72a921adaacf",
-        "Node name for S&R": "ZImageSelectiveLoRALoader",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.5.1"
-        }
-      },
-      "widgets_values": [
-        "zimage\\20s_horror_z_100.safetensors",
-        1,
-        "Default",
-        "Custom",
-        "Custom",
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        1,
-        true,
-        true,
-        0.6000000000000001,
-        true,
-        0.55,
-        false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        false,
-        true,
-        0.6000000000000001,
-        0.9
-      ],
-      "ndSuperSelectorEnabled": false,
-      "ndPowerEnabled": false
-    },
-    {
       "id": 98,
       "type": "easy showAnything",
       "pos": [
@@ -2323,7 +535,6 @@
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "anything",
           "name": "anything",
           "shape": 7,
           "type": "*",
@@ -2332,21 +543,20 @@
       ],
       "outputs": [
         {
-          "localized_name": "output",
           "name": "output",
           "type": "*",
           "links": null
         }
       ],
       "properties": {
+        "cnr_id": "comfyui-easy-use",
+        "ver": "1.3.4",
+        "Node name for S&R": "easy showAnything",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
           "version": "7.5.1"
-        },
-        "cnr_id": "comfyui-easy-use",
-        "ver": "1.3.4",
-        "Node name for S&R": "easy showAnything"
+        }
       },
       "widgets_values": [
         "LoRA Patch Analysis (ZIMAGE)\n============================================================\nBlock                        Score    Patches   Strength\n------------------------------------------------------------\nlayer_22                  [████████████████████] 100.0  (  8)     8.000\nlayer_21                  [███████████████████░]  98.6  (  8)     8.000\nlayer_20                  [███████████████████░]  96.1  (  8)     8.000\nlayer_23                  [██████████████████░░]  93.7  (  8)     8.000\nlayer_24                  [████████████████░░░░]  84.9  (  8)     8.000\nlayer_19                  [████████████████░░░░]  84.6  (  8)     8.000\nlayer_15                  [███████████████░░░░░]  78.5  (  8)     8.000\nlayer_18                  [███████████████░░░░░]  78.4  (  8)     8.000\nlayer_16                  [███████████████░░░░░]  78.0  (  8)     8.000\nlayer_17                  [███████████████░░░░░]  75.2  (  8)     8.000\nlayer_25                  [██████████████░░░░░░]  74.0  (  8)     8.000\nlayer_13                  [██████████████░░░░░░]  71.3  (  8)     8.000\nlayer_14                  [██████████████░░░░░░]  70.7  (  8)     8.000\nlayer_27                  [█████████████░░░░░░░]  67.4  (  8)     8.000\nlayer_26                  [█████████████░░░░░░░]  66.3  (  8)     8.000\nlayer_28                  [█████████████░░░░░░░]  65.7  (  8)     8.000\nlayer_9                   [████████████░░░░░░░░]  63.3  (  8)     8.000\nlayer_11                  [████████████░░░░░░░░]  62.1  (  8)     8.000\nlayer_29                  [███████████░░░░░░░░░]  60.0  (  8)     8.000\nlayer_12                  [███████████░░░░░░░░░]  59.4  (  8)     8.000\nlayer_8                   [███████████░░░░░░░░░]  55.5  (  8)     8.000\nlayer_10                  [██████████░░░░░░░░░░]  50.7  (  8)     8.000\nlayer_5                   [█████████░░░░░░░░░░░]  48.4  (  8)     8.000\nlayer_6                   [████████░░░░░░░░░░░░]  44.6  (  8)     8.000\nlayer_7                   [████████░░░░░░░░░░░░]  40.3  (  8)     8.000\nlayer_3                   [███████░░░░░░░░░░░░░]  35.5  (  8)     8.000\nlayer_4                   [██████░░░░░░░░░░░░░░]  34.6  (  8)     8.000\nlayer_2                   [██████░░░░░░░░░░░░░░]  31.1  (  8)     8.000\nlayer_1                   [████░░░░░░░░░░░░░░░░]  22.3  (  8)     8.000\nlayer_0                   [████░░░░░░░░░░░░░░░░]  20.1  (  8)     8.000\n------------------------------------------------------------\nTotal patched layers: 240"
@@ -2368,60 +578,28 @@
       "mode": 0,
       "inputs": [
         {
-          "localized_name": "model",
           "name": "model",
           "type": "MODEL",
           "link": 212
         },
         {
-          "localized_name": "clip",
           "name": "clip",
           "type": "CLIP",
           "link": 211
-        },
-        {
-          "localized_name": "lora_name",
-          "name": "lora_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "lora_name"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "strength_model",
-          "name": "strength_model",
-          "type": "FLOAT",
-          "widget": {
-            "name": "strength_model"
-          },
-          "link": null
-        },
-        {
-          "localized_name": "strength_clip",
-          "name": "strength_clip",
-          "type": "FLOAT",
-          "widget": {
-            "name": "strength_clip"
-          },
-          "link": null
         }
       ],
       "outputs": [
         {
-          "localized_name": "model",
           "name": "model",
           "type": "MODEL",
           "links": null
         },
         {
-          "localized_name": "clip",
           "name": "clip",
           "type": "CLIP",
           "links": null
         },
         {
-          "localized_name": "analysis",
           "name": "analysis",
           "type": "STRING",
           "links": [
@@ -2429,7 +607,6 @@
           ]
         },
         {
-          "localized_name": "analysis_json",
           "name": "analysis_json",
           "type": "STRING",
           "links": [
@@ -2437,21 +614,20 @@
           ]
         },
         {
-          "localized_name": "lora_path",
           "name": "lora_path",
           "type": "STRING",
           "links": []
         }
       ],
       "properties": {
+        "aux_id": "ShootTheSound/comfyUI-Realtime-Lora",
+        "ver": "3baddd9117f8c4bafb625d7160ee72a921adaacf",
+        "Node name for S&R": "LoRALoaderWithAnalysis",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
           "version": "7.5.1"
-        },
-        "aux_id": "ShootTheSound/comfyUI-Realtime-Lora",
-        "ver": "3baddd9117f8c4bafb625d7160ee72a921adaacf",
-        "Node name for S&R": "LoRALoaderWithAnalysis"
+        }
       },
       "widgets_values": [
         "zimage\\GlaraH.safetensors",
@@ -2473,7 +649,7 @@
         258.61320970611996
       ],
       "flags": {},
-      "order": 5,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -2489,6 +665,378 @@
       ],
       "color": "#432",
       "bgcolor": "#653"
+    },
+    {
+      "id": 76,
+      "type": "CLIPLoader",
+      "pos": [
+        -3029.461722643861,
+        -1162.995322720111
+      ],
+      "size": [
+        404.76879872725476,
+        106
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            144,
+            179,
+            211,
+            220
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.75",
+        "Node name for S&R": "CLIPLoader",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.5.1",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "qwen_3_4b.safetensors",
+        "lumina2",
+        "default"
+      ],
+      "ndSuperSelectorEnabled": false,
+      "ndPowerEnabled": false
+    },
+    {
+      "id": 74,
+      "type": "CLIPTextEncode",
+      "pos": [
+        -3071.8354368350415,
+        -2257.567961494204
+      ],
+      "size": [
+        423.83001708984375,
+        177.11770629882812
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 208
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [
+            138
+          ]
+        }
+      ],
+      "title": "CLIP Text Encode (Positive Prompt)",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.75",
+        "Node name for S&R": "CLIPTextEncode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.5.1",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "portrait photo of GlaraH woman soldier. She is carrying an axe, held high in a threatening manner in her right hand.  The location is a sewer. She is walking towards the camera, her feet spashing in the sewage. In her left hand a torch casting a hazy beam at the viewer. Behind her we can see a pile of dead zombies that she has killed moments before.\n"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 96,
+      "type": "ZImageSelectiveLoRALoader",
+      "pos": [
+        -2039.3873273587196,
+        -2035.8147062714554
+      ],
+      "size": [
+        500,
+        910
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 218
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 219
+        },
+        {
+          "name": "lora_path_opt",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        },
+        {
+          "name": "analysis_json",
+          "shape": 7,
+          "type": "STRING",
+          "link": 215
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            206
+          ]
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "links": [
+            208
+          ]
+        },
+        {
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "ShootTheSound/comfyUI-Realtime-Lora",
+        "ver": "3baddd9117f8c4bafb625d7160ee72a921adaacf",
+        "Node name for S&R": "ZImageSelectiveLoRALoader",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.5.1"
+        }
+      },
+      "widgets_values": [
+        "zimage\\GlaraH.safetensors",
+        1,
+        "Default",
+        "Custom",
+        "Custom",
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        false,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true
+      ],
+      "ndSuperSelectorEnabled": false,
+      "ndPowerEnabled": false
+    },
+    {
+      "id": 99,
+      "type": "ZImageSelectiveLoRALoader",
+      "pos": [
+        -2567.1528845035973,
+        -2020.1150017870539
+      ],
+      "size": [
+        500,
+        910
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 216
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 220
+        },
+        {
+          "name": "lora_path_opt",
+          "shape": 7,
+          "type": "STRING",
+          "link": null
+        },
+        {
+          "name": "analysis_json",
+          "shape": 7,
+          "type": "STRING",
+          "link": 217
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            218
+          ]
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "links": [
+            219
+          ]
+        },
+        {
+          "name": "info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "ShootTheSound/comfyUI-Realtime-Lora",
+        "ver": "a4e5b6615b5ded71abdca1558663ddd6ee665a3c",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        },
+        "Node name for S&R": "ZImageSelectiveLoRALoader"
+      },
+      "widgets_values": [
+        "zimage\\20s_horror_z_100.safetensors",
+        1,
+        "Default",
+        "Custom",
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        1,
+        true,
+        0,
+        true,
+        0,
+        true,
+        0,
+        true,
+        0,
+        true,
+        0,
+        true,
+        0,
+        true,
+        0,
+        true,
+        0,
+        true,
+        0,
+        true,
+        0,
+        true,
+        0,
+        true,
+        0,
+        true,
+        0.7000000000000001
+      ],
+      "ndSuperSelectorEnabled": false,
+      "ndPowerEnabled": false
     }
   ],
   "links": [
@@ -2573,22 +1121,6 @@
       "CLIP"
     ],
     [
-      192,
-      76,
-      0,
-      88,
-      1,
-      "CLIP"
-    ],
-    [
-      194,
-      86,
-      3,
-      88,
-      3,
-      "STRING"
-    ],
-    [
       197,
       86,
       2,
@@ -2605,36 +1137,12 @@
       "MODEL"
     ],
     [
-      207,
-      88,
-      0,
-      96,
-      0,
-      "MODEL"
-    ],
-    [
       208,
       96,
       1,
       74,
       0,
       "CLIP"
-    ],
-    [
-      209,
-      88,
-      1,
-      96,
-      1,
-      "CLIP"
-    ],
-    [
-      210,
-      77,
-      0,
-      88,
-      0,
-      "MODEL"
     ],
     [
       211,
@@ -2667,16 +1175,56 @@
       96,
       3,
       "STRING"
+    ],
+    [
+      216,
+      77,
+      0,
+      99,
+      0,
+      "MODEL"
+    ],
+    [
+      217,
+      86,
+      3,
+      99,
+      3,
+      "STRING"
+    ],
+    [
+      218,
+      99,
+      0,
+      96,
+      0,
+      "MODEL"
+    ],
+    [
+      219,
+      99,
+      1,
+      96,
+      1,
+      "CLIP"
+    ],
+    [
+      220,
+      76,
+      0,
+      99,
+      1,
+      "CLIP"
     ]
   ],
   "groups": [],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.6588450000000021,
+      "scale": 0.724729500000001,
       "offset": [
-        4252.409517936232,
-        2779.869662207151
+        4211.372921006294,
+        2299.007948136011
       ]
     },
     "frontendVersion": "1.34.8",
