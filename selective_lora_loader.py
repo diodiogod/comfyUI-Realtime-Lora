@@ -480,7 +480,7 @@ class SDXLSelectiveLoRALoader:
                 "block_weights_string": ("STRING", {
                     "multiline": True,
                     "default": "",
-                    "tooltip": "Optional: Named weight syntax (overrides UI). Format: %default=1.0, te1=0.5, te2=0.5, in=0.8, in7-8=1.2, mid=1.0, out=0.9, out0-2=1.5, other=1.0"
+                    "tooltip": "Input/Output: Block weights in positional (1.0, 0.5, 1.2...) or named format (%default=1.0, te1=0.5, in7-8=1.2). Syncs bidirectionally with UI sliders. String input overrides UI."
                 }),
             },
         }
