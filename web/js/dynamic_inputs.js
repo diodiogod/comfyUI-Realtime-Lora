@@ -542,7 +542,7 @@ app.registerExtension({
                 }
             };
 
-            // Mouse handling for slider - let default toggle behavior work for other clicks
+            // Mouse handling for slider - simple version that works
             const originalMouse = toggle.mouse?.bind(toggle);
             toggle.mouse = function(event, pos, node) {
                 const widgetWidth = node.size[0];
@@ -550,18 +550,16 @@ app.registerExtension({
                 const layout = info.getLayout(widgetWidth);
                 const localX = pos[0];
 
-                // Slider interaction - intercept drag on slider area
+                // Slider interaction - click OR drag on slider area
                 if (localX >= layout.sliderX - 5 && localX <= layout.sliderX + layout.sliderWidth + 5) {
                     if (event.type === "pointerdown" || event.type === "pointermove") {
                         let normalized = (localX - layout.sliderX) / layout.sliderWidth;
                         normalized = Math.max(0, Math.min(1, normalized));
                         let newStrength = info.min + normalized * (info.max - info.min);
-                        // Snap to step
                         newStrength = Math.round(newStrength / info.step) * info.step;
                         newStrength = Math.max(info.min, Math.min(info.max, newStrength));
                         strength.value = newStrength;
 
-                        // Force Python preset to "Custom" when manually changing strength
                         if (node._pythonPresetWidget) {
                             node._pythonPresetWidget.value = "Custom";
                         }
@@ -574,7 +572,6 @@ app.registerExtension({
                 // Let default behavior handle toggle clicks
                 if (originalMouse) {
                     const result = originalMouse(event, pos, node);
-                    // Force Python preset to "Custom" when manually toggling blocks
                     if (event.type === "pointerdown" && node._pythonPresetWidget) {
                         node._pythonPresetWidget.value = "Custom";
                     }
@@ -772,12 +769,22 @@ app.registerExtension({
             // Check on mouse interactions with node (text → UI sync)
             const origOnMouseDown = node.onMouseDown;
             node.onMouseDown = function(e, pos, canvas) {
-                // Check if text changed and sync to UI
-                setTimeout(() => node.checkAndSyncTextChanges(), 10);
+                // Check if text changed and sync to UI before processing interaction
+                node.checkAndSyncTextChanges();
                 if (origOnMouseDown) {
                     return origOnMouseDown.apply(this, arguments);
                 }
             };
+
+            // Also check on widget interaction for text field specifically
+            if (stringWidget.inputEl) {
+                stringWidget.inputEl.addEventListener('blur', () => {
+                    node.checkAndSyncTextChanges();
+                });
+                stringWidget.inputEl.addEventListener('change', () => {
+                    node.checkAndSyncTextChanges();
+                });
+            }
 
             // Whenever a slider changes, update the string
             // Use setTimeout to ensure widgets are fully initialized
