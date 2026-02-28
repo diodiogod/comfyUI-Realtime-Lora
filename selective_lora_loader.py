@@ -66,6 +66,8 @@ def _get_architecture_blocks(architecture: str) -> list:
                 'unet_mid', 'output_0', 'output_1', 'output_2', 'output_3', 'output_4', 'output_5']
     elif architecture == 'FLUX':
         return [f'double_{i}' for i in range(19)] + [f'single_{i}' for i in range(38)]
+    elif architecture == 'FLUX_KLEIN':
+        return [f'double_{i}' for i in range(8)] + [f'single_{i}' for i in range(24)]
     elif architecture == 'ZIMAGE':
         return [f'layer_{i}' for i in range(30)]
     elif architecture == 'WAN':
@@ -150,6 +152,9 @@ def _parse_block_weights_string(weights_str: str, architecture: str) -> Optional
                   'mid': 'unet_mid', 'out': 'output', 'other': 'other_weights'}
     elif architecture == 'FLUX':
         block_names = [f'double_{i}' for i in range(19)] + [f'single_{i}' for i in range(38)] + ['other_weights']
+        aliases = {'other': 'other_weights'}
+    elif architecture == 'FLUX_KLEIN':
+        block_names = [f'double_{i}' for i in range(8)] + [f'single_{i}' for i in range(24)] + ['other_weights']
         aliases = {'other': 'other_weights'}
     elif architecture == 'ZIMAGE':
         block_names = [f'layer_{i}' for i in range(30)] + ['other_weights']
@@ -238,12 +243,14 @@ def _parse_block_weights_string(weights_str: str, architecture: str) -> Optional
                 elif key == 'text_encoder_1' or key == 'text_encoder_2' or key == 'unet_mid' or key == 'other_weights':
                     if key in result:
                         result[key] = (val != 0.0, val)
-            elif architecture == 'FLUX':
+            elif architecture in ('FLUX', 'FLUX_KLEIN'):
+                double_count = 19 if architecture == 'FLUX' else 8
+                single_count = 38 if architecture == 'FLUX' else 24
                 if key == 'double':
-                    for i in range(19):
+                    for i in range(double_count):
                         result[f'double_{i}'] = (val != 0.0, val)
                 elif key == 'single':
-                    for i in range(38):
+                    for i in range(single_count):
                         result[f'single_{i}'] = (val != 0.0, val)
                 elif key in result:
                     result[key] = (val != 0.0, val)
@@ -1511,12 +1518,17 @@ class FLUXKleinSelectiveLoRALoader:
         inputs["optional"] = {
             "lora_path_opt": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer to use its selected LoRA"}),
             "analysis_json": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer for impact-colored checkboxes"}),
+            "block_weights_string": ("STRING", {
+                "multiline": True,
+                "default": "",
+                "tooltip": "Input/Output: Block weights in positional (1.0, 0.5, 1.2...) or named format (%default=1.0, double=0.8, double4-7=1.2, single=0.5). Syncs bidirectionally with UI sliders. String input overrides UI."
+            }),
         }
 
         return inputs
 
-    RETURN_TYPES = ("MODEL", "CLIP", "STRING")
-    RETURN_NAMES = ("model", "clip", "info")
+    RETURN_TYPES = ("MODEL", "CLIP", "STRING", "STRING")
+    RETURN_NAMES = ("model", "clip", "info", "weights_output")
     OUTPUT_NODE = True
     FUNCTION = "load_lora"
     CATEGORY = "loaders/lora"
@@ -1529,10 +1541,24 @@ Double blocks (0-7) typically have more impact than single blocks (0-23)."""
     def load_lora(self, model, clip, lora_name, strength, preset, **kwargs):
         lora_path_opt = kwargs.get("lora_path_opt")
         analysis_json = kwargs.get("analysis_json")
+        block_weights_string = kwargs.get("block_weights_string", "")
 
         self._analysis_json = analysis_json
 
-        if preset != "Custom":
+        parsed_weights = _parse_block_weights_string(block_weights_string, 'FLUX_KLEIN')
+
+        if parsed_weights:
+            enabled_blocks = set()
+            block_strengths = {}
+            for block_name, (enabled, blk_str) in parsed_weights.items():
+                if block_name == 'other_weights':
+                    other_enabled = enabled
+                    other_str = blk_str
+                elif enabled:
+                    enabled_blocks.add(block_name)
+                    block_strengths[block_name] = blk_str
+            using_preset = "String Input"
+        elif preset != "Custom":
             enabled_blocks = FLUX_KLEIN_PRESETS[preset].copy()
             block_strengths = {b: 1.0 for b in enabled_blocks}
             other_enabled = preset != "All Off"
@@ -1580,7 +1606,8 @@ Double blocks (0-7) typically have more impact than single blocks (0-23)."""
         filtered_count = len(filtered_dict)
 
         if filtered_count == 0:
-            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied")}
+            weights_out = "%default=0.0"
+            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied", weights_out)}
 
         model_lora, clip_lora = comfy.sd.load_lora_for_models(
             model, clip, filtered_dict, strength, strength
@@ -1605,7 +1632,18 @@ Double blocks (0-7) typically have more impact than single blocks (0-23)."""
         else:
             info += "All blocks enabled"
 
-        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info)}
+        weights_list = []
+        for i in range(8):
+            block_id = f"double_{i}"
+            blk_str = block_strengths.get(block_id, 0.0) if block_id in enabled_blocks else 0.0
+            weights_list.append(f"{blk_str:.2f}")
+        for i in range(24):
+            block_id = f"single_{i}"
+            blk_str = block_strengths.get(block_id, 0.0) if block_id in enabled_blocks else 0.0
+            weights_list.append(f"{blk_str:.2f}")
+        weights_output = ", ".join(weights_list)
+
+        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info, weights_output)}
 
 
 NODE_CLASS_MAPPINGS = {
