@@ -903,9 +903,9 @@ app.registerExtension({
                 labelWidth: 95,
                 valueWidth: 38,
                 gap: 6,
-                min: -2.0,
-                max: 2.0,
-                step: 0.05,  // Hardcoded - ComfyUI widget options not reliably accessible
+                min: strength.options?.min ?? -2.0,
+                max: strength.options?.max ?? 2.0,
+                step: strength.options?.step ?? 0.05,
                 getLayout: function(widgetWidth) {
                     const sliderWidth = widgetWidth - this.margin - this.checkboxSize - this.gap - this.labelWidth - this.gap - this.valueWidth - this.margin - this.gap;
                     const checkboxX = this.margin;
