@@ -556,6 +556,13 @@ app.registerExtension({
                 node.combineBlockWidgets();
                 node.addPresetWidget(nodeData.name);
                 node.setupSchedulePresetWidget();
+                node.setupBidirectionalSync(nodeData.name);
+
+                setTimeout(() => {
+                    if (node.updateStringFromUI) {
+                        node.updateStringFromUI();
+                    }
+                }, 150);
 
                 // Double the default width for better slider usability
                 const minWidth = 500;
@@ -645,8 +652,21 @@ app.registerExtension({
                     }
                 }
 
+                if (node.updateStringFromUI) {
+                    node.updateStringFromUI();
+                }
+
                 node.setDirtyCanvas(true);
             }, 150); // Longer delay to ensure ComfyUI finishes deserializing first
+        };
+
+        const origOnMouseUp = nodeType.prototype.onMouseUp;
+        nodeType.prototype.onMouseUp = function(e, localPos, graphCanvas) {
+            const result = origOnMouseUp ? origOnMouseUp.apply(this, arguments) : false;
+            if (this.updateStringFromUI) {
+                this.updateStringFromUI();
+            }
+            return result;
         };
 
         // Hook onExecuted to store analysis data and sync user presets
@@ -1309,7 +1329,127 @@ app.registerExtension({
                 }
             }
 
+            if (this.updateStringFromUI) {
+                this.updateStringFromUI();
+            }
+
             this.setDirtyCanvas(true);
+        };
+
+        nodeType.prototype.setupBidirectionalSync = function(nodeName) {
+            const node = this;
+            const config = SELECTIVE_LOADER_PRESETS[nodeName];
+            if (!config) return;
+
+            const stringWidget = node.widgets.find(w => w.name === "block_weights_string");
+            if (!stringWidget) return;
+
+            node._lastStringValue = stringWidget.value || "";
+
+            node.parseStringToUI = function() {
+                const widget = node.widgets.find(w => w.name === "block_weights_string");
+                if (!widget || !widget.value?.trim() || widget._updating) return;
+
+                const input = widget.value.trim();
+                if (input.startsWith("%")) {
+                    return;
+                }
+
+                const values = input.split(",").map(v => parseFloat(v.trim())).filter(v => !Number.isNaN(v));
+                if (values.length !== config.blocks.length) {
+                    return;
+                }
+
+                for (let i = 0; i < config.blocks.length; i++) {
+                    const blockName = config.blocks[i];
+                    const toggleWidget = node.widgets.find(w => w.name === blockName);
+                    const strWidget = node.widgets.find(w => w.name === `${blockName}_str`);
+                    if (!toggleWidget || !strWidget) continue;
+
+                    const value = values[i];
+                    toggleWidget.value = value !== 0;
+                    strWidget.value = value !== 0 ? value : 1.0;
+                }
+
+                node.setDirtyCanvas(true);
+            };
+
+            node.updateStringFromUI = function() {
+                const widget = node.widgets.find(w => w.name === "block_weights_string");
+                if (!widget || widget._updating) return;
+
+                const values = config.blocks.map((blockName) => {
+                    const toggleWidget = node.widgets.find(w => w.name === blockName);
+                    const strWidget = node.widgets.find(w => w.name === `${blockName}_str`);
+                    if (!toggleWidget || !strWidget) {
+                        return "1.00";
+                    }
+                    return toggleWidget.value ? Number(strWidget.value).toFixed(2) : "0.00";
+                });
+
+                widget._updating = true;
+                widget.value = values.join(", ");
+                widget._updating = false;
+                node._lastStringValue = widget.value;
+            };
+
+            node.checkAndSyncTextChanges = function() {
+                const widget = node.widgets.find(w => w.name === "block_weights_string");
+                if (!widget || widget._updating) return;
+                if (widget.value !== node._lastStringValue) {
+                    node._lastStringValue = widget.value;
+                    node.parseStringToUI();
+                }
+            };
+
+            const origOnMouseDown = node.onMouseDown;
+            node.onMouseDown = function(e, pos, canvas) {
+                node.checkAndSyncTextChanges();
+                if (origOnMouseDown) {
+                    return origOnMouseDown.apply(this, arguments);
+                }
+            };
+
+            if (stringWidget.inputEl) {
+                stringWidget.inputEl.addEventListener("blur", () => {
+                    node.checkAndSyncTextChanges();
+                });
+                stringWidget.inputEl.addEventListener("change", () => {
+                    node.checkAndSyncTextChanges();
+                });
+                stringWidget.inputEl.addEventListener("input", () => {
+                    node._lastStringValue = stringWidget.value;
+                    node.parseStringToUI();
+                });
+            }
+
+            setTimeout(() => {
+                for (const blockName of config.blocks) {
+                    const toggleWidget = node.widgets.find(w => w.name === blockName);
+                    const strWidget = node.widgets.find(w => w.name === `${blockName}_str`);
+                    if (!toggleWidget || !strWidget) continue;
+
+                    const origToggleCallback = toggleWidget.callback;
+                    toggleWidget.callback = function(value) {
+                        if (origToggleCallback) {
+                            origToggleCallback.call(this, value);
+                        }
+                        if (node.updateStringFromUI) {
+                            node.updateStringFromUI();
+                        }
+                    };
+
+                    const origStrCallback = strWidget.callback;
+                    strWidget.callback = function(value) {
+                        if (origStrCallback) {
+                            origStrCallback.call(this, value);
+                        }
+                        if (node.updateStringFromUI) {
+                            node.updateStringFromUI();
+                        }
+                    };
+                }
+            }, 200);
         };
     }
 });

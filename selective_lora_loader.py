@@ -59,6 +59,156 @@ def _detect_architecture(keys):
     return 'UNKNOWN'
 
 
+def _get_architecture_blocks(architecture: str) -> List[str]:
+    """Get the ordered list of block names for string chaining."""
+    if architecture == 'SDXL':
+        return [
+            'text_encoder_1', 'text_encoder_2', 'input_4', 'input_5', 'input_7',
+            'input_8', 'unet_mid', 'output_0', 'output_1', 'output_2', 'output_3',
+            'output_4', 'output_5',
+        ]
+    if architecture == 'ZIMAGE':
+        return [f'layer_{i}' for i in range(30)]
+    if architecture == 'FLUX':
+        return [f'double_{i}' for i in range(19)] + [f'single_{i}' for i in range(38)]
+    if architecture == 'WAN':
+        return [f'block_{i}' for i in range(40)]
+    if architecture == 'QWEN':
+        return [f'block_{i}' for i in range(60)]
+    if architecture == 'FLUX_KLEIN':
+        return [f'double_{i}' for i in range(8)] + [f'single_{i}' for i in range(24)]
+    return []
+
+
+def _parse_block_weights_string(weights_str: str, architecture: str) -> Optional[Dict[str, tuple[bool, float]]]:
+    """
+    Parse block weights from either:
+    - positional format: "1.0, 0.0, 0.5, ..."
+    - named format: "%default=1.0, te1=0.5, in7-8=1.2"
+    """
+    if not weights_str or not weights_str.strip():
+        return None
+
+    weights_str = weights_str.strip()
+
+    if not weights_str.startswith('%'):
+        try:
+            values = [float(v.strip()) for v in weights_str.split(',') if v.strip()]
+        except (TypeError, ValueError):
+            return None
+
+        block_names = _get_architecture_blocks(architecture)
+        if not values or len(values) != len(block_names):
+            return None
+
+        parsed = {block_name: (value != 0.0, value) for block_name, value in zip(block_names, values)}
+        parsed["other_weights"] = (True, 1.0)
+        return parsed
+
+    pairs = [part.strip() for part in weights_str[1:].split(',') if part.strip()]
+    if not pairs:
+        return None
+
+    block_names = _get_architecture_blocks(architecture)
+    parsed: Dict[str, Optional[tuple[bool, float]]] = {block_name: None for block_name in block_names}
+    parsed["other_weights"] = None
+    default_val = 1.0
+
+    def set_named_targets(prefix: str, value: float):
+        for block_name in block_names:
+            if block_name.startswith(prefix):
+                parsed[block_name] = (value != 0.0, value)
+
+    def set_numeric_range(prefix: str, spec: str, value: float):
+        for chunk in spec.split(','):
+            chunk = chunk.strip()
+            if not chunk:
+                continue
+            if '-' in chunk:
+                start_s, end_s = chunk.split('-', 1)
+                start_i = int(start_s)
+                end_i = int(end_s)
+                for idx in range(start_i, end_i + 1):
+                    parsed[f"{prefix}_{idx}"] = (value != 0.0, value)
+            else:
+                parsed[f"{prefix}_{int(chunk)}"] = (value != 0.0, value)
+
+    alias_map = {
+        "te1": ["text_encoder_1"],
+        "te2": ["text_encoder_2"],
+        "mid": ["unet_mid"],
+        "other": ["other_weights"],
+    }
+
+    for pair in pairs:
+        if '=' not in pair:
+            return None
+        key, value_str = [part.strip() for part in pair.split('=', 1)]
+        try:
+            value = float(value_str)
+        except ValueError:
+            return None
+
+        key_lower = key.lower()
+        if key_lower == "default":
+            default_val = value
+            continue
+
+        if key_lower in alias_map:
+            for block_name in alias_map[key_lower]:
+                parsed[block_name] = (value != 0.0, value)
+            continue
+
+        if architecture == 'SDXL':
+            if key_lower == "in":
+                for name in ["input_4", "input_5", "input_7", "input_8"]:
+                    parsed[name] = (value != 0.0, value)
+                continue
+            if key_lower.startswith("in"):
+                set_numeric_range("input", key_lower[2:], value)
+                continue
+            if key_lower == "out":
+                for name in [f"output_{i}" for i in range(6)]:
+                    parsed[name] = (value != 0.0, value)
+                continue
+            if key_lower.startswith("out"):
+                set_numeric_range("output", key_lower[3:], value)
+                continue
+        elif architecture == 'FLUX':
+            if key_lower == "double":
+                set_named_targets("double_", value)
+                continue
+            if key_lower.startswith("double"):
+                set_numeric_range("double", key_lower[6:], value)
+                continue
+            if key_lower == "single":
+                set_named_targets("single_", value)
+                continue
+            if key_lower.startswith("single"):
+                set_numeric_range("single", key_lower[6:], value)
+                continue
+        elif architecture in ('ZIMAGE', 'WAN', 'QWEN'):
+            prefix = "layer" if architecture == 'ZIMAGE' else "block"
+            if key_lower == prefix:
+                set_named_targets(f"{prefix}_", value)
+                continue
+            if key_lower.startswith(prefix):
+                set_numeric_range(prefix, key_lower[len(prefix):], value)
+                continue
+
+        if key_lower in parsed:
+            parsed[key_lower] = (value != 0.0, value)
+            continue
+
+        return None
+
+    final_parsed: Dict[str, tuple[bool, float]] = {}
+    for block_name, current in parsed.items():
+        final_parsed[block_name] = current if current is not None else (default_val != 0.0, default_val)
+
+    return final_parsed
+
+
 def _extract_block_id_sdxl(key: str) -> str:
     """Extract block ID for SDXL/SD15 architecture."""
     key_lower = key.lower()
@@ -326,11 +476,16 @@ class SDXLSelectiveLoRALoader:
             "optional": {
                 "lora_path_opt": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer to use its selected LoRA"}),
                 "analysis_json": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer for impact-colored checkboxes"}),
+                "block_weights_string": ("STRING", {
+                    "multiline": True,
+                    "default": "",
+                    "tooltip": "Input/Output block profile string. Positional text syncs with the UI. String input overrides UI values."
+                }),
             },
         }
 
-    RETURN_TYPES = ("MODEL", "CLIP", "STRING")
-    RETURN_NAMES = ("model", "clip", "info")
+    RETURN_TYPES = ("MODEL", "CLIP", "STRING", "STRING")
+    RETURN_NAMES = ("model", "clip", "info", "weights_output")
     OUTPUT_NODE = True
     FUNCTION = "load_lora"
     CATEGORY = "loaders/lora"
@@ -349,50 +504,58 @@ output_1 is strongest for style/color, input_8/output_0 for composition."""
                   output_0, output_0_str, output_1, output_1_str, output_2, output_2_str,
                   output_3, output_3_str, output_4, output_4_str, output_5, output_5_str,
                   other_weights, other_weights_str,
-                  lora_path_opt=None, analysis_json=None):
+                  lora_path_opt=None, analysis_json=None, block_weights_string=""):
         # Store analysis_json for UI callback
         self._analysis_json = analysis_json
 
         # Valid SDXL blocks (only those with attention layers)
         all_valid_blocks = ["text_encoder_1", "text_encoder_2", "input_4", "input_5", "input_7", "input_8", "unet_mid", "output_0", "output_1", "output_2", "output_3", "output_4", "output_5"]
 
-        # Build block settings: {block_id: (enabled, strength)}
-        block_settings = {
-            "text_encoder_1": (text_encoder_1, text_encoder_1_str),
-            "text_encoder_2": (text_encoder_2, text_encoder_2_str),
-            "input_4": (input_4, input_4_str),
-            "input_5": (input_5, input_5_str),
-            "input_7": (input_7, input_7_str),
-            "input_8": (input_8, input_8_str),
-            "unet_mid": (unet_mid, unet_mid_str),
-            "output_0": (output_0, output_0_str),
-            "output_1": (output_1, output_1_str),
-            "output_2": (output_2, output_2_str),
-            "output_3": (output_3, output_3_str),
-            "output_4": (output_4, output_4_str),
-            "output_5": (output_5, output_5_str),
-        }
-
-        # Use preset or custom toggles
-        if preset != "Custom":
-            enabled_blocks = SDXL_PRESETS[preset].copy()
-            # Presets use strength 1.0 for all enabled blocks
-            block_strengths = {b: 1.0 for b in enabled_blocks}
-            # All Off preset disables other_weights too
-            other_enabled = preset != "All Off"
-            other_str = 1.0
-            using_preset = preset
-        else:
-            # Build from individual toggles and strengths
+        parsed_weights = _parse_block_weights_string(block_weights_string, 'SDXL')
+        if parsed_weights:
             enabled_blocks = set()
             block_strengths = {}
-            for block_id, (enabled, blk_str) in block_settings.items():
-                if enabled:
-                    enabled_blocks.add(block_id)
-                    block_strengths[block_id] = blk_str
-            other_enabled = other_weights
-            other_str = other_weights_str
-            using_preset = None
+            for block_name, (enabled, blk_str) in parsed_weights.items():
+                if block_name == "other_weights":
+                    other_enabled = enabled
+                    other_str = blk_str
+                elif enabled:
+                    enabled_blocks.add(block_name)
+                    block_strengths[block_name] = blk_str
+            using_preset = "String Input"
+        else:
+            block_settings = {
+                "text_encoder_1": (text_encoder_1, text_encoder_1_str),
+                "text_encoder_2": (text_encoder_2, text_encoder_2_str),
+                "input_4": (input_4, input_4_str),
+                "input_5": (input_5, input_5_str),
+                "input_7": (input_7, input_7_str),
+                "input_8": (input_8, input_8_str),
+                "unet_mid": (unet_mid, unet_mid_str),
+                "output_0": (output_0, output_0_str),
+                "output_1": (output_1, output_1_str),
+                "output_2": (output_2, output_2_str),
+                "output_3": (output_3, output_3_str),
+                "output_4": (output_4, output_4_str),
+                "output_5": (output_5, output_5_str),
+            }
+
+            if preset != "Custom":
+                enabled_blocks = SDXL_PRESETS[preset].copy()
+                block_strengths = {b: 1.0 for b in enabled_blocks}
+                other_enabled = preset != "All Off"
+                other_str = 1.0
+                using_preset = preset
+            else:
+                enabled_blocks = set()
+                block_strengths = {}
+                for block_id, (enabled, blk_str) in block_settings.items():
+                    if enabled:
+                        enabled_blocks.add(block_id)
+                        block_strengths[block_id] = blk_str
+                other_enabled = other_weights
+                other_str = other_weights_str
+                using_preset = None
 
         # Load LoRA - use optional path if provided, otherwise use dropdown selection
         if lora_path_opt and os.path.exists(lora_path_opt):
@@ -421,7 +584,7 @@ output_1 is strongest for style/color, input_8/output_0 for composition."""
         filtered_count = len(filtered_dict)
 
         if filtered_count == 0:
-            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied")}
+            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied", "")}
 
         # Apply filtered LoRA
         model_lora, clip_lora = comfy.sd.load_lora_for_models(
@@ -444,7 +607,11 @@ output_1 is strongest for style/color, input_8/output_0 for composition."""
         else:
             info += "All blocks enabled"
 
-        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info)}
+        weights_output = ", ".join(
+            f"{(block_strengths.get(block, 0.0) if block in enabled_blocks else 0.0):.2f}"
+            for block in all_valid_blocks
+        )
+        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info, weights_output)}
 
 
 class ZImageSelectiveLoRALoader:
@@ -501,12 +668,17 @@ class ZImageSelectiveLoRALoader:
         inputs["optional"] = {
             "lora_path_opt": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer to use its selected LoRA"}),
             "analysis_json": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer for impact-colored checkboxes"}),
+            "block_weights_string": ("STRING", {
+                "multiline": True,
+                "default": "",
+                "tooltip": "Input/Output block profile string. Positional text syncs with the UI. String input overrides UI values."
+            }),
         }
 
         return inputs
 
-    RETURN_TYPES = ("MODEL", "CLIP", "STRING")
-    RETURN_NAMES = ("model", "clip", "info")
+    RETURN_TYPES = ("MODEL", "CLIP", "STRING", "STRING")
+    RETURN_NAMES = ("model", "clip", "info", "weights_output")
     OUTPUT_NODE = True
     FUNCTION = "load_lora"
     CATEGORY = "loaders/lora"
@@ -520,11 +692,24 @@ Try disabling early layers (0-9) to reduce style bleed while keeping identity.""
         # Get optional inputs from kwargs
         lora_path_opt = kwargs.get("lora_path_opt")
         analysis_json = kwargs.get("analysis_json")
+        block_weights_string = kwargs.get("block_weights_string", "")
 
         # Store analysis_json for UI callback
         self._analysis_json = analysis_json
-        # Use preset or custom toggles
-        if preset != "Custom":
+        parsed_weights = _parse_block_weights_string(block_weights_string, 'ZIMAGE')
+        if parsed_weights:
+            enabled_layers = set()
+            layer_strengths = {}
+            for block_name, (enabled, blk_str) in parsed_weights.items():
+                if block_name == "other_weights":
+                    other_enabled = enabled
+                    other_str = blk_str
+                elif block_name.startswith("layer_") and enabled:
+                    layer_num = int(block_name.split("_")[1])
+                    enabled_layers.add(layer_num)
+                    layer_strengths[layer_num] = blk_str
+            using_preset = "String Input"
+        elif preset != "Custom":
             enabled_layers = ZIMAGE_PRESETS[preset].copy()
             layer_strengths = {i: 1.0 for i in enabled_layers}
             # All Off preset disables other_weights too
@@ -572,7 +757,7 @@ Try disabling early layers (0-9) to reduce style bleed while keeping identity.""
         filtered_count = len(filtered_dict)
 
         if filtered_count == 0:
-            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All layers disabled, no LoRA applied")}
+            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All layers disabled, no LoRA applied", "")}
 
         # Apply filtered LoRA
         model_lora, clip_lora = comfy.sd.load_lora_for_models(
@@ -595,7 +780,11 @@ Try disabling early layers (0-9) to reduce style bleed while keeping identity.""
         else:
             info += "All layers enabled"
 
-        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info)}
+        weights_output = ", ".join(
+            f"{(layer_strengths.get(i, 0.0) if i in enabled_layers else 0.0):.2f}"
+            for i in range(30)
+        )
+        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info, weights_output)}
 
 
 class FLUXSelectiveLoRALoader:
@@ -659,12 +848,17 @@ class FLUXSelectiveLoRALoader:
         inputs["optional"] = {
             "lora_path_opt": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer to use its selected LoRA"}),
             "analysis_json": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer for impact-colored checkboxes"}),
+            "block_weights_string": ("STRING", {
+                "multiline": True,
+                "default": "",
+                "tooltip": "Input/Output block profile string. Positional text syncs with the UI. String input overrides UI values."
+            }),
         }
 
         return inputs
 
-    RETURN_TYPES = ("MODEL", "CLIP", "STRING")
-    RETURN_NAMES = ("model", "clip", "info")
+    RETURN_TYPES = ("MODEL", "CLIP", "STRING", "STRING")
+    RETURN_NAMES = ("model", "clip", "info", "weights_output")
     OUTPUT_NODE = True
     FUNCTION = "load_lora"
     CATEGORY = "loaders/lora"
@@ -677,11 +871,23 @@ Double blocks (0-18) typically have more impact than single blocks (0-37)."""
         # Get optional inputs from kwargs
         lora_path_opt = kwargs.get("lora_path_opt")
         analysis_json = kwargs.get("analysis_json")
+        block_weights_string = kwargs.get("block_weights_string", "")
 
         # Store analysis_json for UI callback
         self._analysis_json = analysis_json
-        # Use preset or custom toggles
-        if preset != "Custom":
+        parsed_weights = _parse_block_weights_string(block_weights_string, 'FLUX')
+        if parsed_weights:
+            enabled_blocks = set()
+            block_strengths = {}
+            for block_name, (enabled, blk_str) in parsed_weights.items():
+                if block_name == "other_weights":
+                    other_enabled = enabled
+                    other_str = blk_str
+                elif enabled:
+                    enabled_blocks.add(block_name)
+                    block_strengths[block_name] = blk_str
+            using_preset = "String Input"
+        elif preset != "Custom":
             enabled_blocks = FLUX_PRESETS[preset].copy()
             block_strengths = {b: 1.0 for b in enabled_blocks}
             # All Off preset disables other_weights too
@@ -733,7 +939,7 @@ Double blocks (0-18) typically have more impact than single blocks (0-37)."""
         filtered_count = len(filtered_dict)
 
         if filtered_count == 0:
-            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied")}
+            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied", "")}
 
         # Apply filtered LoRA
         model_lora, clip_lora = comfy.sd.load_lora_for_models(
@@ -767,7 +973,11 @@ Double blocks (0-18) typically have more impact than single blocks (0-37)."""
         else:
             info += "All blocks enabled"
 
-        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info)}
+        weights_output = ", ".join(
+            [f"{(block_strengths.get(f'double_{i}', 0.0) if f'double_{i}' in enabled_blocks else 0.0):.2f}" for i in range(19)] +
+            [f"{(block_strengths.get(f'single_{i}', 0.0) if f'single_{i}' in enabled_blocks else 0.0):.2f}" for i in range(38)]
+        )
+        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info, weights_output)}
 
 
 class WanSelectiveLoRALoader:
@@ -823,12 +1033,17 @@ class WanSelectiveLoRALoader:
         inputs["optional"] = {
             "lora_path_opt": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer to use its selected LoRA"}),
             "analysis_json": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer for impact-colored checkboxes"}),
+            "block_weights_string": ("STRING", {
+                "multiline": True,
+                "default": "",
+                "tooltip": "Input/Output block profile string. Positional text syncs with the UI. String input overrides UI values."
+            }),
         }
 
         return inputs
 
-    RETURN_TYPES = ("MODEL", "CLIP", "STRING")
-    RETURN_NAMES = ("model", "clip", "info")
+    RETURN_TYPES = ("MODEL", "CLIP", "STRING", "STRING")
+    RETURN_NAMES = ("model", "clip", "info", "weights_output")
     OUTPUT_NODE = True
     FUNCTION = "load_lora"
     CATEGORY = "loaders/lora"
@@ -840,11 +1055,24 @@ TIP: Use 'LoRA Loader + Analyzer' first to see which blocks matter for your LoRA
         # Get optional inputs from kwargs
         lora_path_opt = kwargs.get("lora_path_opt")
         analysis_json = kwargs.get("analysis_json")
+        block_weights_string = kwargs.get("block_weights_string", "")
 
         # Store analysis_json for UI callback
         self._analysis_json = analysis_json
-        # Use preset or custom toggles
-        if preset != "Custom":
+        parsed_weights = _parse_block_weights_string(block_weights_string, 'WAN')
+        if parsed_weights:
+            enabled_blocks = set()
+            block_strengths = {}
+            for block_name, (enabled, blk_str) in parsed_weights.items():
+                if block_name == "other_weights":
+                    other_enabled = enabled
+                    other_str = blk_str
+                elif block_name.startswith("block_") and enabled:
+                    block_num = int(block_name.split("_")[1])
+                    enabled_blocks.add(block_num)
+                    block_strengths[block_num] = blk_str
+            using_preset = "String Input"
+        elif preset != "Custom":
             enabled_blocks = WAN_PRESETS[preset].copy()
             block_strengths = {i: 1.0 for i in enabled_blocks}
             # All Off preset disables other_weights too
@@ -892,7 +1120,7 @@ TIP: Use 'LoRA Loader + Analyzer' first to see which blocks matter for your LoRA
         filtered_count = len(filtered_dict)
 
         if filtered_count == 0:
-            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied")}
+            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied", "")}
 
         # Apply filtered LoRA
         model_lora, clip_lora = comfy.sd.load_lora_for_models(
@@ -919,7 +1147,11 @@ TIP: Use 'LoRA Loader + Analyzer' first to see which blocks matter for your LoRA
         else:
             info += "All blocks enabled"
 
-        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info)}
+        weights_output = ", ".join(
+            f"{(block_strengths.get(i, 0.0) if i in enabled_blocks else 0.0):.2f}"
+            for i in range(40)
+        )
+        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info, weights_output)}
 
 
 class QwenSelectiveLoRALoader:
@@ -975,12 +1207,17 @@ class QwenSelectiveLoRALoader:
         inputs["optional"] = {
             "lora_path_opt": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer to use its selected LoRA"}),
             "analysis_json": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer for impact-colored checkboxes"}),
+            "block_weights_string": ("STRING", {
+                "multiline": True,
+                "default": "",
+                "tooltip": "Input/Output block profile string. Positional text syncs with the UI. String input overrides UI values."
+            }),
         }
 
         return inputs
 
-    RETURN_TYPES = ("MODEL", "CLIP", "STRING")
-    RETURN_NAMES = ("model", "clip", "info")
+    RETURN_TYPES = ("MODEL", "CLIP", "STRING", "STRING")
+    RETURN_NAMES = ("model", "clip", "info", "weights_output")
     OUTPUT_NODE = True
     FUNCTION = "load_lora"
     CATEGORY = "loaders/lora"
@@ -992,11 +1229,24 @@ TIP: Use 'LoRA Loader + Analyzer' first to see which blocks matter for your LoRA
         # Get optional inputs from kwargs
         lora_path_opt = kwargs.get("lora_path_opt")
         analysis_json = kwargs.get("analysis_json")
+        block_weights_string = kwargs.get("block_weights_string", "")
 
         # Store analysis_json for UI callback
         self._analysis_json = analysis_json
-        # Use preset or custom toggles
-        if preset != "Custom":
+        parsed_weights = _parse_block_weights_string(block_weights_string, 'QWEN')
+        if parsed_weights:
+            enabled_blocks = set()
+            block_strengths = {}
+            for block_name, (enabled, blk_str) in parsed_weights.items():
+                if block_name == "other_weights":
+                    other_enabled = enabled
+                    other_str = blk_str
+                elif block_name.startswith("block_") and enabled:
+                    block_num = int(block_name.split("_")[1])
+                    enabled_blocks.add(block_num)
+                    block_strengths[block_num] = blk_str
+            using_preset = "String Input"
+        elif preset != "Custom":
             enabled_blocks = QWEN_PRESETS[preset].copy()
             block_strengths = {i: 1.0 for i in enabled_blocks}
             # All Off preset disables other_weights too
@@ -1044,7 +1294,7 @@ TIP: Use 'LoRA Loader + Analyzer' first to see which blocks matter for your LoRA
         filtered_count = len(filtered_dict)
 
         if filtered_count == 0:
-            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied")}
+            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied", "")}
 
         # Apply filtered LoRA
         model_lora, clip_lora = comfy.sd.load_lora_for_models(
@@ -1071,7 +1321,11 @@ TIP: Use 'LoRA Loader + Analyzer' first to see which blocks matter for your LoRA
         else:
             info += "All blocks enabled"
 
-        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info)}
+        weights_output = ", ".join(
+            f"{(block_strengths.get(i, 0.0) if i in enabled_blocks else 0.0):.2f}"
+            for i in range(60)
+        )
+        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info, weights_output)}
 
 
 NODE_CLASS_MAPPINGS = {
