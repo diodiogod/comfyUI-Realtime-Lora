@@ -307,6 +307,21 @@ const SELECTIVE_LOADER_PRESETS = {
             "Odds Only": { enabled: Array.from({length: 30}, (_, i) => `block_${i * 2 + 1}`), strength: 1.0 },
         }
     },
+    "Krea2SelectiveLoRALoader": {
+        blocks: [...Array.from({length: 28}, (_, i) => `block_${i}`), "other_weights"],
+        presets: {
+            "Default": { enabled: "ALL", strength: 1.0 },
+            "All Off": { enabled: [], strength: 0.0 },
+            "Half Strength": { enabled: "ALL", strength: 0.5 },
+            "Late Only (21-27)": { enabled: [...Array.from({length: 7}, (_, i) => `block_${i + 21}`), "other_weights"], strength: 1.0 },
+            "Mid-Late (14-27)": { enabled: [...Array.from({length: 14}, (_, i) => `block_${i + 14}`), "other_weights"], strength: 1.0 },
+            "Skip Early (7-27)": { enabled: [...Array.from({length: 21}, (_, i) => `block_${i + 7}`), "other_weights"], strength: 1.0 },
+            "Mid Only (9-18)": { enabled: Array.from({length: 10}, (_, i) => `block_${i + 9}`), strength: 1.0 },
+            "Early Only (0-8)": { enabled: Array.from({length: 9}, (_, i) => `block_${i}`), strength: 1.0 },
+            "Evens Only": { enabled: Array.from({length: 14}, (_, i) => `block_${i * 2}`), strength: 1.0 },
+            "Odds Only": { enabled: Array.from({length: 14}, (_, i) => `block_${i * 2 + 1}`), strength: 1.0 },
+        }
+    },
     // V2 Combined Analyzer + Selective Loaders
     "ZImageAnalyzerSelectiveLoaderV2": {
         blocks: [...Array.from({length: 30}, (_, i) => `layer_${i}`), "context_refiner", "noise_refiner", "final_layer", "x_embedder", "other_weights"],
@@ -397,6 +412,21 @@ const SELECTIVE_LOADER_PRESETS = {
             "Early Only (0-29)": { enabled: Array.from({length: 30}, (_, i) => `block_${i}`), strength: 1.0 },
             "Evens Only": { enabled: Array.from({length: 30}, (_, i) => `block_${i * 2}`), strength: 1.0 },
             "Odds Only": { enabled: Array.from({length: 30}, (_, i) => `block_${i * 2 + 1}`), strength: 1.0 },
+        }
+    },
+    "Krea2AnalyzerSelectiveLoaderV2": {
+        blocks: [...Array.from({length: 28}, (_, i) => `block_${i}`), "other_weights"],
+        presets: {
+            "Default": { enabled: "ALL", strength: 1.0 },
+            "All Off": { enabled: [], strength: 0.0 },
+            "Half Strength": { enabled: "ALL", strength: 0.5 },
+            "Late Only (21-27)": { enabled: [...Array.from({length: 7}, (_, i) => `block_${i + 21}`), "other_weights"], strength: 1.0 },
+            "Mid-Late (14-27)": { enabled: [...Array.from({length: 14}, (_, i) => `block_${i + 14}`), "other_weights"], strength: 1.0 },
+            "Skip Early (7-27)": { enabled: [...Array.from({length: 21}, (_, i) => `block_${i + 7}`), "other_weights"], strength: 1.0 },
+            "Mid Only (9-18)": { enabled: Array.from({length: 10}, (_, i) => `block_${i + 9}`), strength: 1.0 },
+            "Early Only (0-8)": { enabled: Array.from({length: 9}, (_, i) => `block_${i}`), strength: 1.0 },
+            "Evens Only": { enabled: Array.from({length: 14}, (_, i) => `block_${i * 2}`), strength: 1.0 },
+            "Odds Only": { enabled: Array.from({length: 14}, (_, i) => `block_${i * 2 + 1}`), strength: 1.0 },
         }
     },
     // FLUX Klein 4B (5 double + 20 single blocks)
@@ -516,12 +546,14 @@ app.registerExtension({
             "FLUXSelectiveLoRALoader",
             "WanSelectiveLoRALoader",
             "QwenSelectiveLoRALoader",
+            "Krea2SelectiveLoRALoader",
             // V2 Combined Analyzer + Selective Loaders
             "ZImageAnalyzerSelectiveLoaderV2",
             "SDXLAnalyzerSelectiveLoaderV2",
             "FLUXAnalyzerSelectiveLoaderV2",
             "WanAnalyzerSelectiveLoaderV2",
             "QwenAnalyzerSelectiveLoaderV2",
+            "Krea2AnalyzerSelectiveLoaderV2",
             "FluxKlein4BAnalyzerSelectiveLoaderV2",
             "FluxKlein9BAnalyzerSelectiveLoaderV2",
             // Model Layer Editor nodes (base model per-block control)

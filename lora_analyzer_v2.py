@@ -395,6 +395,9 @@ def _detect_from_metadata(metadata: dict) -> str:
     # Check modelspec.architecture (newer LoRAs)
     arch = metadata.get('modelspec.architecture', '').lower()
 
+    if 'krea' in arch or 'krea2' in arch or 'k2' == arch:
+        return 'KREA2'
+
     # Check for FLUX Klein variants first (before generic FLUX). Match loosely on
     # "klein" + size so the distilled and base variants both resolve, e.g.
     # flux-2-klein-9b AND flux-2-klein-base-9b.
@@ -411,6 +414,8 @@ def _detect_from_metadata(metadata: dict) -> str:
 
     # Check ss_base_model_version (Kohya format)
     base_model = metadata.get('ss_base_model_version', '').lower()
+    if 'krea' in base_model or 'krea2' in base_model:
+        return 'KREA2'
     # Check Klein variants first (loose match catches *-klein-base-9b etc.)
     if 'klein' in base_model and '4b' in base_model:
         return 'FLUX_KLEIN_4B'
@@ -425,6 +430,8 @@ def _detect_from_metadata(metadata: dict) -> str:
 
     # Check ss_network_module (Kohya format)
     network_module = metadata.get('ss_network_module', '').lower()
+    if 'lora_krea2' in network_module or 'krea' in network_module:
+        return 'KREA2'
     if 'flux' in network_module:
         return 'FLUX'
     if 'zimage' in network_module or 'z_image' in network_module:
@@ -436,6 +443,8 @@ def _detect_from_metadata(metadata: dict) -> str:
 
     # Check ss_sd_model_name for hints
     model_name = metadata.get('ss_sd_model_name', '').lower()
+    if 'krea' in model_name or 'krea2' in model_name:
+        return 'KREA2'
     if 'flux' in model_name:
         return 'FLUX'
     if 'sdxl' in model_name or 'xl' in model_name:
@@ -454,6 +463,7 @@ def _count_unique_blocks(keys: list) -> dict:
         'flux_single': set(),
         'wan_blocks': set(),
         'qwen_blocks': set(),
+        'krea2_blocks': set(),
         'sdxl_blocks': set(),
         'sd15_blocks': set(),
     }
@@ -507,6 +517,12 @@ def _count_unique_blocks(keys: list) -> dict:
             if match:
                 counts['qwen_blocks'].add(int(match.group(1)))
 
+        # Krea 2 main SingleStreamBlocks (0-27)
+        if any(x in key_lower for x in ['txtfusion', 'txtmlp', 'tmlp', 'tproj', 'wq', 'wk', 'wv', 'wo', 'gate', 'mlp']):
+            match = re.search(r'blocks[._](\d+)', key_lower)
+            if match:
+                counts['krea2_blocks'].add(int(match.group(1)))
+
         # SDXL/SD15 blocks
         match = re.search(r'input_blocks?[._]?(\d+)', key_lower)
         if match:
@@ -525,6 +541,7 @@ def _score_architecture(keys: list, num_keys: int, block_counts: dict) -> dict:
         'FLUX': 0,
         'FLUX_KLEIN_4B': 0,
         'FLUX_KLEIN_9B': 0,
+        'KREA2': 0,
         'ZIMAGE': 0,
         'WAN': 0,
         'SDXL': 0,
@@ -533,6 +550,18 @@ def _score_architecture(keys: list, num_keys: int, block_counts: dict) -> dict:
 
     keys_lower = [k.lower() for k in keys]
     keys_str = ' '.join(keys_lower)
+
+    # === KREA2 scoring ===
+    if 'lora_krea2' in keys_str or 'krea2' in keys_str or 'krea_2' in keys_str:
+        scores['KREA2'] += 80
+    if any(x in keys_str for x in ['txtfusion', 'txtmlp', 'tmlp', 'tproj']) and any(re.search(r'blocks[._]\d+', k) for k in keys_lower):
+        scores['KREA2'] += 60
+    if any(re.search(r'blocks[._]\d+[._].*(?:attn[._])?(?:wq|wk|wv|wo|gate)', k) for k in keys_lower):
+        scores['KREA2'] += 45
+    if block_counts['krea2_blocks'] == 28:
+        scores['KREA2'] += 35
+    elif 20 <= block_counts['krea2_blocks'] <= 28:
+        scores['KREA2'] += 20
 
     # === QWEN_IMAGE scoring ===
     if any('transformer_blocks' in k and any(x in k for x in ['img_mlp', 'txt_mlp', 'img_mod', 'txt_mod']) for k in keys_lower):
@@ -642,6 +671,9 @@ def _score_architecture(keys: list, num_keys: int, block_counts: dict) -> dict:
         scores['SD15'] -= 30
     if scores['FLUX'] > 40:
         scores['SD15'] -= 30
+    if scores['KREA2'] > 40:
+        scores['WAN'] -= 20
+        scores['SD15'] -= 30
 
     return scores
 
@@ -716,6 +748,12 @@ def _extract_block_id_v2(key: str, architecture: str) -> str:
 
     if architecture == 'QWEN_IMAGE':
         match = re.search(r'transformer_blocks[._](\d+)', key)
+        return f"block_{match.group(1)}" if match else 'other'
+
+    elif architecture == 'KREA2':
+        if any(part in key_lower for part in ['txtfusion', 'txtmlp', 'tmlp', 'tproj', 'first', 'last']):
+            return 'other'
+        match = re.search(r'blocks[._](\d+)', key_lower)
         return f"block_{match.group(1)}" if match else 'other'
 
     elif architecture == 'ZIMAGE':
@@ -1347,6 +1385,38 @@ Supports strength scheduling format: 0:.2,.5:.8,1:1.0""",
             "Late Singles (12-23)": {"enabled": [f"single_{i}" for i in range(12, 24)], "strength": 1.0},
             "Evens Only": {"enabled": [f"double_{i}" for i in range(0, 8, 2)] + [f"single_{i}" for i in range(0, 24, 2)], "strength": 1.0},
             "Odds Only": {"enabled": [f"double_{i}" for i in range(1, 8, 2)] + [f"single_{i}" for i in range(1, 24, 2)], "strength": 1.0},
+            "Custom": None,
+        },
+    },
+    "KREA2": {
+        "node_id": "Krea2AnalyzerSelectiveLoaderV2",
+        "display_name": "Krea 2 Analyzer + Selective Loader V2",
+        "description": """Combined analyzer and selective loader for Krea 2 LoRAs.
+Analyzes block impact and allows per-block control with strength shaping.
+
+Block Guide (28 main SingleStreamBlocks):
+- block_0-8: Early main blocks
+- block_9-18: Mid main blocks
+- block_19-27: Late main blocks
+
+Non-main-block Krea 2 Linear layers such as first, last.linear, tmlp, txtmlp, tproj,
+and txtfusion are controlled by other_weights.
+
+Supports strength scheduling format: 0:.2,.5:.8,1:1.0""",
+        "architecture": "KREA2",
+        "blocks": [f"block_{i}" for i in range(28)] + ["other_weights"],
+        "block_labels": {f"block_{i}": f"Block {i}" for i in range(28)} | {"other_weights": "Other Weights"},
+        "presets": {
+            "Default": {"enabled": "ALL", "strength": 1.0},
+            "All Off": {"enabled": [], "strength": 0.0},
+            "Half Strength": {"enabled": "ALL", "strength": 0.5},
+            "Late Only (21-27)": {"enabled": [f"block_{i}" for i in range(21, 28)] + ["other_weights"], "strength": 1.0},
+            "Mid-Late (14-27)": {"enabled": [f"block_{i}" for i in range(14, 28)] + ["other_weights"], "strength": 1.0},
+            "Skip Early (7-27)": {"enabled": [f"block_{i}" for i in range(7, 28)] + ["other_weights"], "strength": 1.0},
+            "Mid Only (9-18)": {"enabled": [f"block_{i}" for i in range(9, 19)], "strength": 1.0},
+            "Early Only (0-8)": {"enabled": [f"block_{i}" for i in range(9)], "strength": 1.0},
+            "Evens Only": {"enabled": [f"block_{i}" for i in range(0, 28, 2)], "strength": 1.0},
+            "Odds Only": {"enabled": [f"block_{i}" for i in range(1, 28, 2)], "strength": 1.0},
             "Custom": None,
         },
     },

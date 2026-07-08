@@ -21,6 +21,12 @@ def _detect_architecture(keys):
 
     if any('transformer_blocks' in k and any(x in k for x in ['img_mlp', 'txt_mlp', 'img_mod', 'txt_mod']) for k in keys_lower):
         return 'QWEN_IMAGE'
+    if 'lora_krea2' in keys_str or 'krea2' in keys_str or 'krea_2' in keys_str:
+        return 'KREA2'
+    if any(x in keys_str for x in ['txtfusion', 'txtmlp', 'tmlp', 'tproj']) and any(re.search(r'blocks[._]\d+', k) for k in keys_lower):
+        return 'KREA2'
+    if any(re.search(r'blocks[._]\d+[._].*(?:attn[._])?(?:wq|wk|wv|wo|gate)', k) for k in keys_lower):
+        return 'KREA2'
     if any('diffusion_model.layers.' in k and ('attention' in k or 'adaln' in k.lower()) for k in keys_lower):
         return 'ZIMAGE'
     # Musubi Tuner Z-Image format (lora_unet_layers_N_attention_...)
@@ -299,6 +305,17 @@ def _extract_block_id_qwen(key: str) -> Optional[int]:
     return None
 
 
+def _extract_block_id_krea2(key: str) -> Optional[int]:
+    """Extract main SingleStreamBlock number for Krea 2 architecture."""
+    key_lower = key.lower()
+    if any(part in key_lower for part in ['txtfusion', 'txtmlp', 'tmlp', 'tproj', 'first', 'last']):
+        return None
+    match = re.search(r'blocks[._](\d+)', key_lower)
+    if match:
+        return int(match.group(1))
+    return None
+
+
 # SDXL block presets - only blocks with attention layers that LoRA trains
 # SDXL has: text_encoder_1, text_encoder_2, input_4/5/7/8, unet_mid, output_0-5
 # Other input/output blocks are ResNet-only (no attention) and not trained by standard LoRA
@@ -395,6 +412,20 @@ QWEN_PRESETS = {
     "Early Only (0-29)": set(range(30)),
     "Evens Only": set(range(0, 60, 2)),
     "Odds Only": set(range(1, 60, 2)),
+    "Custom": None,  # Use individual toggles
+}
+
+# Krea 2 block presets - 28 main SingleStreamBlocks
+KREA2_PRESETS = {
+    "All Blocks": set(range(28)),
+    "All Off": set(),  # All blocks disabled including other_weights
+    "Late Only (21-27)": set(range(21, 28)),
+    "Mid-Late (14-27)": set(range(14, 28)),
+    "Skip Early (7-27)": set(range(7, 28)),
+    "Mid Only (9-18)": set(range(9, 19)),
+    "Early Only (0-8)": set(range(9)),
+    "Evens Only": set(range(0, 28, 2)),
+    "Odds Only": set(range(1, 28, 2)),
     "Custom": None,  # Use individual toggles
 }
 
@@ -1328,12 +1359,170 @@ TIP: Use 'LoRA Loader + Analyzer' first to see which blocks matter for your LoRA
         return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info, weights_output)}
 
 
+class Krea2SelectiveLoRALoader:
+    """
+    Selective LoRA Loader for Krea 2 models.
+
+    Toggle individual main SingleStreamBlocks on/off to control which parts of the LoRA are applied.
+    Non-main-block Linear layers such as first, last.linear, tmlp, txtmlp, tproj, and txtfusion are
+    controlled by other_weights.
+
+    Block Guide (28 total):
+    - block_0-8: Early main blocks
+    - block_9-18: Mid main blocks
+    - block_19-27: Late main blocks
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        inputs = {
+            "required": {
+                "model": ("MODEL",),
+                "clip": ("CLIP",),
+                "lora_name": (folder_paths.get_filename_list("loras"), {
+                    "tooltip": "Krea 2 LoRA file to load"
+                }),
+                "strength": ("FLOAT", {
+                    "default": 1.0,
+                    "min": -5.0,
+                    "max": 5.0,
+                    "step": 0.05,
+                    "tooltip": "Overall LoRA strength"
+                }),
+                "preset": (list(KREA2_PRESETS.keys()), {
+                    "default": "All Blocks",
+                    "tooltip": "Quick preset selection. Choose 'Custom' to use individual toggles below."
+                }),
+            },
+        }
+
+        # Add main block toggles and strengths (0-27)
+        for i in range(28):
+            inputs["required"][f"block_{i}"] = ("BOOLEAN", {"default": True})
+            inputs["required"][f"block_{i}_str"] = ("FLOAT", {
+                "default": 1.0, "min": -5.0, "max": 5.0, "step": 0.05
+            })
+
+        # Other Krea 2 Linear layers: first, last.linear, tmlp, txtmlp, tproj, txtfusion, etc.
+        inputs["required"]["other_weights"] = ("BOOLEAN", {"default": True})
+        inputs["required"]["other_weights_str"] = ("FLOAT", {
+            "default": 1.0, "min": -5.0, "max": 5.0, "step": 0.05
+        })
+
+        inputs["optional"] = {
+            "lora_path_opt": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer to use its selected LoRA"}),
+            "analysis_json": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer for impact-colored checkboxes"}),
+        }
+
+        return inputs
+
+    RETURN_TYPES = ("MODEL", "CLIP", "STRING")
+    RETURN_NAMES = ("model", "clip", "info")
+    OUTPUT_NODE = True
+    FUNCTION = "load_lora"
+    CATEGORY = "loaders/lora"
+    DESCRIPTION = """Selective LoRA loader for Krea 2. Toggle the 28 main SingleStreamBlocks on/off.
+
+TIP: Use 'LoRA Loader + Analyzer' first to see which blocks matter for your LoRA.
+Use other_weights for non-main-block Krea 2 modules like txtfusion, tmlp, txtmlp, tproj, first, and last.linear."""
+
+    def load_lora(self, model, clip, lora_name, strength, preset, **kwargs):
+        # Get optional inputs from kwargs
+        lora_path_opt = kwargs.get("lora_path_opt")
+        analysis_json = kwargs.get("analysis_json")
+
+        # Store analysis_json for UI callback
+        self._analysis_json = analysis_json
+        # Use preset or custom toggles
+        if preset != "Custom":
+            enabled_blocks = KREA2_PRESETS[preset].copy()
+            block_strengths = {i: 1.0 for i in enabled_blocks}
+            # All Off preset disables other_weights too
+            other_enabled = preset != "All Off"
+            other_str = 1.0
+            using_preset = preset
+        else:
+            # Build from individual toggles and strengths
+            enabled_blocks = set()
+            block_strengths = {}
+            for i in range(28):
+                if kwargs.get(f"block_{i}", True):
+                    enabled_blocks.add(i)
+                    block_strengths[i] = kwargs.get(f"block_{i}_str", 1.0)
+            other_enabled = kwargs.get("other_weights", True)
+            other_str = kwargs.get("other_weights_str", 1.0)
+            using_preset = None
+
+        # Load LoRA - use optional path if provided, otherwise use dropdown selection
+        if lora_path_opt and os.path.exists(lora_path_opt):
+            lora_path = lora_path_opt
+        else:
+            lora_path = folder_paths.get_full_path("loras", lora_name)
+        if not lora_path or not os.path.exists(lora_path):
+            return (model, clip, "Error: LoRA not found")
+
+        if lora_path.endswith('.safetensors'):
+            lora_state_dict = load_file(lora_path)
+        else:
+            lora_state_dict = torch.load(lora_path, map_location='cpu')
+
+        # Filter and scale tensors by block strength
+        filtered_dict = {}
+        for key, value in lora_state_dict.items():
+            block_num = _extract_block_id_krea2(key)
+            if block_num is not None:
+                if block_num in enabled_blocks:
+                    blk_str = block_strengths.get(block_num, 1.0)
+                    filtered_dict[key] = value * blk_str if blk_str != 1.0 else value
+            elif other_enabled:
+                # Include non-main-block keys based on other_weights setting
+                filtered_dict[key] = value * other_str if other_str != 1.0 else value
+
+        original_count = len(lora_state_dict)
+        filtered_count = len(filtered_dict)
+
+        if filtered_count == 0:
+            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied")}
+
+        # Apply filtered LoRA
+        model_lora, clip_lora = comfy.sd.load_lora_for_models(
+            model, clip, filtered_dict, strength, strength
+        )
+
+        disabled_blocks = [i for i in range(28) if i not in enabled_blocks]
+        scaled = [f"{i}={block_strengths[i]:.2f}" for i in enabled_blocks if block_strengths.get(i, 1.0) != 1.0]
+
+        info = f"Loaded {filtered_count}/{original_count} tensors\n"
+        if using_preset:
+            info += f"Preset: {using_preset}\n"
+        else:
+            info += "Preset: Custom\n"
+        info += f"Enabled: {len(enabled_blocks)}/28 blocks\n"
+        info += f"Other weights: {'enabled' if other_enabled else 'disabled'}"
+        if other_enabled and other_str != 1.0:
+            info += f" ({other_str:.2f})"
+        info += "\n"
+        if scaled:
+            info += f"Scaled: {', '.join(scaled[:10])}"
+            if len(scaled) > 10:
+                info += f" (+{len(scaled)-10} more)\n"
+            else:
+                info += "\n"
+        if disabled_blocks:
+            info += f"Disabled: {', '.join(str(b) for b in disabled_blocks)}"
+        else:
+            info += "All blocks enabled"
+
+        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info)}
+
+
 NODE_CLASS_MAPPINGS = {
     "SDXLSelectiveLoRALoader": SDXLSelectiveLoRALoader,
     "ZImageSelectiveLoRALoader": ZImageSelectiveLoRALoader,
     "FLUXSelectiveLoRALoader": FLUXSelectiveLoRALoader,
     "WanSelectiveLoRALoader": WanSelectiveLoRALoader,
     "QwenSelectiveLoRALoader": QwenSelectiveLoRALoader,
+    "Krea2SelectiveLoRALoader": Krea2SelectiveLoRALoader,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -1342,4 +1531,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "FLUXSelectiveLoRALoader": "Selective LoRA Loader (FLUX)",
     "WanSelectiveLoRALoader": "Selective LoRA Loader (Wan)",
     "QwenSelectiveLoRALoader": "Selective LoRA Loader (Qwen)",
+    "Krea2SelectiveLoRALoader": "Selective LoRA Loader (Krea 2)",
 }
