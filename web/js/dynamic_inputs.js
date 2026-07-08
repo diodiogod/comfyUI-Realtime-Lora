@@ -811,6 +811,10 @@ app.registerExtension({
 
             // Combined draw function for toggle widget (strength widget will be hidden)
             toggle.draw = function(ctx, node, widgetWidth, y, widgetHeight) {
+                // Store draw position for precise slider hit detection.
+                toggle._lastDrawY = y;
+                toggle._lastDrawHeight = widgetHeight;
+
                 const margin = 10;
                 const checkboxSize = 14;
                 const labelWidth = 95; // Fixed label width
@@ -948,25 +952,74 @@ app.registerExtension({
                 }
             };
 
-            // Mouse handling for slider - let default toggle behavior work for other clicks
+            // Mouse handling for slider with precise Y-axis hit detection and click-to-jump.
             const originalMouse = toggle.mouse?.bind(toggle);
             toggle.mouse = function(event, pos, node) {
                 const widgetWidth = node.size[0];
                 const info = toggle.sliderInfo;
                 const layout = info.getLayout(widgetWidth);
                 const localX = pos[0];
+                const absoluteY = pos[1];
 
-                // Slider interaction - intercept drag on slider area
-                if (localX >= layout.sliderX - 5 && localX <= layout.sliderX + layout.sliderWidth + 5) {
-                    if (event.type === "pointerdown" || event.type === "pointermove") {
-                        let normalized = (localX - layout.sliderX) / layout.sliderWidth;
-                        normalized = Math.max(0, Math.min(1, normalized));
-                        let newStrength = info.min + normalized * (info.max - info.min);
-                        // Snap to step
-                        newStrength = Math.round(newStrength / info.step) * info.step;
-                        newStrength = Math.max(info.min, Math.min(info.max, newStrength));
-                        strength.value = newStrength;
-                        node.setDirtyCanvas(true);
+                if (toggle._lastDrawY === undefined || toggle._lastDrawHeight === undefined) {
+                    return originalMouse ? originalMouse(event, pos, node) : false;
+                }
+
+                const widgetY = toggle._lastDrawY;
+                const widgetHeight = toggle._lastDrawHeight;
+                const localY = absoluteY - widgetY;
+                const trackCenterY = widgetHeight / 2;
+                const verticalTolerance = 4;
+
+                const inSliderX = localX >= layout.sliderX && localX <= layout.sliderX + layout.sliderWidth;
+                const inSliderY = Math.abs(localY - trackCenterY) <= verticalTolerance;
+
+                const setStrengthFromX = () => {
+                    let normalized = (localX - layout.sliderX) / layout.sliderWidth;
+                    normalized = Math.max(0, Math.min(1, normalized));
+                    let newStrength = info.min + normalized * (info.max - info.min);
+                    newStrength = Math.round(newStrength / info.step) * info.step;
+                    newStrength = Math.max(info.min, Math.min(info.max, newStrength));
+                    strength.value = newStrength;
+                    node.setDirtyCanvas(true);
+                };
+
+                if (event.type === "pointermove") {
+                    if (toggle._wasDragging || (inSliderX && inSliderY)) {
+                        toggle._wasDragging = true;
+                        setStrengthFromX();
+                        return true;
+                    }
+                }
+
+                if (inSliderX && inSliderY && event.type === "pointerup") {
+                    if (!toggle._wasDragging) {
+                        let strengthVal = parseFloat(strength.value);
+                        if (isNaN(strengthVal)) strengthVal = 1.0;
+
+                        const range = info.max - info.min;
+                        const normalizedStrength = (strengthVal - info.min) / range;
+                        const handleX = layout.sliderX + normalizedStrength * layout.sliderWidth;
+                        const handleRadius = 6;
+                        const distanceToHandle = Math.abs(localX - handleX);
+
+                        if (distanceToHandle > handleRadius) {
+                            // LiteGraph may already toggle on track click; undo that and jump the slider.
+                            toggle.value = !toggle.value;
+                            setStrengthFromX();
+                        }
+                    }
+                    toggle._wasDragging = false;
+                    return true;
+                }
+
+                if (event.type === "pointerup") {
+                    toggle._wasDragging = false;
+                }
+
+                if (localX >= layout.sliderX - 5 && localX <= layout.sliderX + layout.sliderWidth + 5 && inSliderY) {
+                    if (event.type === "pointerdown") {
+                        setStrengthFromX();
                         return true;
                     }
                 }
