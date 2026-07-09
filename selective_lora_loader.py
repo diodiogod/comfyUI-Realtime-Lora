@@ -1412,12 +1412,17 @@ class Krea2SelectiveLoRALoader:
         inputs["optional"] = {
             "lora_path_opt": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer to use its selected LoRA"}),
             "analysis_json": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer for impact-colored checkboxes"}),
+            "block_weights_string": ("STRING", {
+                "multiline": True,
+                "default": "",
+                "tooltip": "Input/Output block profile string. Positional text syncs with the UI. String input overrides UI values."
+            }),
         }
 
         return inputs
 
-    RETURN_TYPES = ("MODEL", "CLIP", "STRING")
-    RETURN_NAMES = ("model", "clip", "info")
+    RETURN_TYPES = ("MODEL", "CLIP", "STRING", "STRING")
+    RETURN_NAMES = ("model", "clip", "info", "weights_output")
     OUTPUT_NODE = True
     FUNCTION = "load_lora"
     CATEGORY = "loaders/lora"
@@ -1430,11 +1435,24 @@ Use other_weights for non-main-block Krea 2 modules like txtfusion, tmlp, txtmlp
         # Get optional inputs from kwargs
         lora_path_opt = kwargs.get("lora_path_opt")
         analysis_json = kwargs.get("analysis_json")
+        block_weights_string = kwargs.get("block_weights_string", "")
 
         # Store analysis_json for UI callback
         self._analysis_json = analysis_json
-        # Use preset or custom toggles
-        if preset != "Custom":
+        parsed_weights = _parse_block_weights_string(block_weights_string, 'KREA2')
+        if parsed_weights:
+            enabled_blocks = set()
+            block_strengths = {}
+            for block_name, (enabled, blk_str) in parsed_weights.items():
+                if block_name == "other_weights":
+                    other_enabled = enabled
+                    other_str = blk_str
+                elif block_name.startswith("block_") and enabled:
+                    block_num = int(block_name.split("_")[1])
+                    enabled_blocks.add(block_num)
+                    block_strengths[block_num] = blk_str
+            using_preset = "String Input"
+        elif preset != "Custom":
             enabled_blocks = KREA2_PRESETS[preset].copy()
             block_strengths = {i: 1.0 for i in enabled_blocks}
             # All Off preset disables other_weights too
@@ -1459,7 +1477,7 @@ Use other_weights for non-main-block Krea 2 modules like txtfusion, tmlp, txtmlp
         else:
             lora_path = folder_paths.get_full_path("loras", lora_name)
         if not lora_path or not os.path.exists(lora_path):
-            return (model, clip, "Error: LoRA not found")
+            return (model, clip, "Error: LoRA not found", "")
 
         if lora_path.endswith('.safetensors'):
             lora_state_dict = load_file(lora_path)
@@ -1482,7 +1500,7 @@ Use other_weights for non-main-block Krea 2 modules like txtfusion, tmlp, txtmlp
         filtered_count = len(filtered_dict)
 
         if filtered_count == 0:
-            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied")}
+            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied", "")}
 
         # Apply filtered LoRA
         model_lora, clip_lora = comfy.sd.load_lora_for_models(
@@ -1513,7 +1531,11 @@ Use other_weights for non-main-block Krea 2 modules like txtfusion, tmlp, txtmlp
         else:
             info += "All blocks enabled"
 
-        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info)}
+        weights_output = ", ".join(
+            f"{(block_strengths.get(i, 0.0) if i in enabled_blocks else 0.0):.2f}"
+            for i in range(28)
+        )
+        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info, weights_output)}
 
 
 NODE_CLASS_MAPPINGS = {
