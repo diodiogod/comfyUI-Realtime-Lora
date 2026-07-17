@@ -5,12 +5,14 @@ User-friendly loaders with architecture-specific controls.
 
 import os
 import re
+from datetime import datetime
 from typing import Dict, List, Optional
 
 import torch
 import folder_paths
 import comfy.sd
-from safetensors.torch import load_file
+from safetensors import safe_open
+from safetensors.torch import load_file, save_file
 
 
 def _detect_architecture(keys):
@@ -314,6 +316,52 @@ def _extract_block_id_krea2(key: str) -> Optional[int]:
     if match:
         return int(match.group(1))
     return None
+
+
+def _save_krea2_filtered_lora(
+    filtered_lora: dict,
+    source_path: str,
+    save_path: str,
+    save_filename: str,
+) -> Optional[str]:
+    """Save the exact tensor dictionary applied by the Krea 2 selective loader."""
+    if not save_path or not save_path.strip():
+        return None
+
+    output_dir = os.path.expanduser(save_path.strip())
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+    except OSError as error:
+        print(f"[Krea 2 Selective Loader] Could not create save directory: {error}")
+        return None
+
+    base_name = save_filename.strip() if save_filename else "krea2_selective"
+    if base_name.lower().endswith(".safetensors"):
+        base_name = base_name[:-12]
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_path = os.path.join(output_dir, f"{base_name}_{timestamp}.safetensors")
+
+    metadata = {}
+    if source_path.lower().endswith(".safetensors"):
+        try:
+            with safe_open(source_path, framework="pt", device="cpu") as source:
+                metadata = dict(source.metadata() or {})
+        except Exception as error:
+            print(f"[Krea 2 Selective Loader] Could not read source metadata: {error}")
+
+    metadata.update({
+        "refined_by": "Selective LoRA Loader (Krea 2)",
+        "refined_date": datetime.now().isoformat(),
+        "refined_source": os.path.basename(source_path),
+    })
+
+    try:
+        save_file(filtered_lora, output_path, metadata=metadata)
+        print(f"[Krea 2 Selective Loader] Saved filtered LoRA: {output_path}")
+        return output_path
+    except Exception as error:
+        print(f"[Krea 2 Selective Loader] Could not save filtered LoRA: {error}")
+        return None
 
 
 # SDXL block presets - only blocks with attention layers that LoRA trains
@@ -1417,6 +1465,18 @@ class Krea2SelectiveLoRALoader:
                 "default": "",
                 "tooltip": "Input/Output block profile string. Positional text syncs with the UI. String input overrides UI values."
             }),
+            "save_refined_lora": ("BOOLEAN", {
+                "default": False,
+                "tooltip": "Save the exact filtered/scaled LoRA applied by this node."
+            }),
+            "save_path": ("STRING", {
+                "default": "",
+                "tooltip": "Directory where the filtered LoRA will be saved."
+            }),
+            "save_filename": ("STRING", {
+                "default": "",
+                "tooltip": "Base filename. A timestamp and .safetensors are added automatically."
+            }),
         }
 
         return inputs
@@ -1436,6 +1496,9 @@ Use other_weights for non-main-block Krea 2 modules like txtfusion, tmlp, txtmlp
         lora_path_opt = kwargs.get("lora_path_opt")
         analysis_json = kwargs.get("analysis_json")
         block_weights_string = kwargs.get("block_weights_string", "")
+        save_refined_lora = kwargs.get("save_refined_lora", False)
+        save_path = kwargs.get("save_path", "")
+        save_filename = kwargs.get("save_filename", "")
 
         # Store analysis_json for UI callback
         self._analysis_json = analysis_json
@@ -1502,6 +1565,15 @@ Use other_weights for non-main-block Krea 2 modules like txtfusion, tmlp, txtmlp
         if filtered_count == 0:
             return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied", "")}
 
+        saved_path = None
+        if save_refined_lora and save_path.strip():
+            saved_path = _save_krea2_filtered_lora(
+                filtered_dict,
+                lora_path,
+                save_path,
+                save_filename,
+            )
+
         # Apply filtered LoRA
         model_lora, clip_lora = comfy.sd.load_lora_for_models(
             model, clip, filtered_dict, strength, strength
@@ -1530,6 +1602,13 @@ Use other_weights for non-main-block Krea 2 modules like txtfusion, tmlp, txtmlp
             info += f"Disabled: {', '.join(str(b) for b in disabled_blocks)}"
         else:
             info += "All blocks enabled"
+        if save_refined_lora:
+            if saved_path:
+                info += f"\nSaved: {saved_path}"
+            elif not save_path.strip():
+                info += "\nSave skipped: save_path is empty"
+            else:
+                info += "\nSave failed; check the ComfyUI console"
 
         weights_output = ", ".join(
             f"{(block_strengths.get(i, 0.0) if i in enabled_blocks else 0.0):.2f}"
