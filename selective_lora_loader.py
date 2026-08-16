@@ -19,6 +19,14 @@ def _detect_architecture(keys):
     keys_str = ' '.join(keys_lower)
     num_keys = len(keys)
 
+    if any(
+        re.search(r'(?:diffusion_model|transformer)\.blocks[._]\d+\..*(?:qkv_proj|out_proj|mlp\.fc[12])', k)
+        for k in keys_lower
+    ) or any(
+        re.search(r'lora_unet_blocks_\d+_(?:attn_qkv_proj|attn_out_proj|mlp_fc[12])', k)
+        for k in keys_lower
+    ):
+        return 'MINIMAX_H3'
     if any('transformer_blocks' in k and any(x in k for x in ['img_mlp', 'txt_mlp', 'img_mod', 'txt_mod']) for k in keys_lower):
         return 'QWEN_IMAGE'
     if 'lora_krea2' in keys_str or 'krea2' in keys_str or 'krea_2' in keys_str:
@@ -83,6 +91,8 @@ def _get_architecture_blocks(architecture: str) -> List[str]:
         return [f'block_{i}' for i in range(60)]
     if architecture == 'KREA2':
         return [f'block_{i}' for i in range(28)]
+    if architecture == 'MINIMAX_H3':
+        return [f'block_{i}' for i in range(50)]
     if architecture == 'FLUX_KLEIN':
         return [f'double_{i}' for i in range(8)] + [f'single_{i}' for i in range(24)]
     return []
@@ -200,7 +210,7 @@ def _parse_block_weights_string(weights_str: str, architecture: str) -> Optional
             if key_lower.startswith("single"):
                 set_numeric_range("single", key_lower[6:], value)
                 continue
-        elif architecture in ('ZIMAGE', 'WAN', 'QWEN', 'KREA2'):
+        elif architecture in ('ZIMAGE', 'WAN', 'QWEN', 'KREA2', 'MINIMAX_H3'):
             prefix = "layer" if architecture == 'ZIMAGE' else "block"
             if key_lower == prefix:
                 set_named_targets(f"{prefix}_", value)
@@ -323,6 +333,64 @@ def _extract_block_id_krea2(key: str) -> Optional[int]:
     return None
 
 
+def _extract_block_id_minimax_h3(key: str) -> Optional[int]:
+    """Extract a top-level MiniMax H3 DiT block, excluding token-refiner blocks."""
+    key_lower = key.lower()
+    match = re.search(r'(?:^|_)lora_unet_blocks_(\d+)_', key_lower)
+    if match:
+        return int(match.group(1))
+    match = re.search(r'(?:^|\.)(?:diffusion_model|transformer)\.blocks[._](\d+)', key_lower)
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def _save_minimax_h3_filtered_lora(
+    filtered_lora: dict,
+    source_path: str,
+    save_path: str,
+    save_filename: str,
+) -> Optional[str]:
+    """Save the exact tensor dictionary applied by the MiniMax H3 loader."""
+    if not save_path or not save_path.strip():
+        return None
+
+    output_dir = os.path.expanduser(save_path.strip())
+    try:
+        os.makedirs(output_dir, exist_ok=True)
+    except OSError as error:
+        print(f"[MiniMax H3 Selective Loader] Could not create save directory: {error}")
+        return None
+
+    base_name = save_filename.strip() if save_filename else "minimax_h3_selective"
+    if base_name.lower().endswith(".safetensors"):
+        base_name = base_name[:-12]
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_path = os.path.join(output_dir, f"{base_name}_{timestamp}.safetensors")
+
+    metadata = {}
+    if source_path.lower().endswith(".safetensors"):
+        try:
+            with safe_open(source_path, framework="pt", device="cpu") as source:
+                metadata = dict(source.metadata() or {})
+        except Exception as error:
+            print(f"[MiniMax H3 Selective Loader] Could not read source metadata: {error}")
+
+    metadata.update({
+        "refined_by": "Selective LoRA Loader (MiniMax H3)",
+        "refined_date": datetime.now().isoformat(),
+        "refined_source": os.path.basename(source_path),
+    })
+
+    try:
+        save_file(filtered_lora, output_path, metadata=metadata)
+        print(f"[MiniMax H3 Selective Loader] Saved filtered LoRA: {output_path}")
+        return output_path
+    except Exception as error:
+        print(f"[MiniMax H3 Selective Loader] Could not save filtered LoRA: {error}")
+        return None
+
+
 # SDXL block presets - only blocks with attention layers that LoRA trains
 # SDXL has: text_encoder_1, text_encoder_2, input_4/5/7/8, unet_mid, output_0-5
 # Other input/output blocks are ResNet-only (no attention) and not trained by standard LoRA
@@ -434,6 +502,20 @@ KREA2_PRESETS = {
     "Evens Only": set(range(0, 28, 2)),
     "Odds Only": set(range(1, 28, 2)),
     "Custom": None,  # Use individual toggles
+}
+
+# MiniMax H3 block presets - 50 top-level packed DiT blocks
+MINIMAX_H3_PRESETS = {
+    "All Blocks": set(range(50)),
+    "All Off": set(),
+    "Late Only (38-49)": set(range(38, 50)),
+    "Mid-Late (25-49)": set(range(25, 50)),
+    "Skip Early (13-49)": set(range(13, 50)),
+    "Mid Only (17-32)": set(range(17, 33)),
+    "Early Only (0-16)": set(range(17)),
+    "Evens Only": set(range(0, 50, 2)),
+    "Odds Only": set(range(1, 50, 2)),
+    "Custom": None,
 }
 
 
@@ -1547,6 +1629,195 @@ Use other_weights for non-main-block Krea 2 modules like txtfusion, tmlp, txtmlp
         return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info, weights_output)}
 
 
+class MiniMaxH3SelectiveLoRALoader:
+    """Selective LoRA loader for MiniMax H3's 50 packed DiT blocks."""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        inputs = {
+            "required": {
+                "model": ("MODEL",),
+                "clip": ("CLIP",),
+                "lora_name": (folder_paths.get_filename_list("loras"), {
+                    "tooltip": "MiniMax H3 LoRA file to load"
+                }),
+                "strength": ("FLOAT", {
+                    "default": 1.0,
+                    "min": -5.0,
+                    "max": 5.0,
+                    "step": 0.05,
+                    "tooltip": "Overall LoRA strength"
+                }),
+                "preset": (list(MINIMAX_H3_PRESETS.keys()), {
+                    "default": "All Blocks",
+                    "tooltip": "Quick preset selection. Choose 'Custom' to use individual toggles below."
+                }),
+            },
+        }
+
+        for i in range(50):
+            inputs["required"][f"block_{i}"] = ("BOOLEAN", {"default": True})
+            inputs["required"][f"block_{i}_str"] = ("FLOAT", {
+                "default": 1.0, "min": -5.0, "max": 5.0, "step": 0.05
+            })
+
+        inputs["required"]["other_weights"] = ("BOOLEAN", {"default": True})
+        inputs["required"]["other_weights_str"] = ("FLOAT", {
+            "default": 1.0, "min": -5.0, "max": 5.0, "step": 0.05
+        })
+
+        inputs["optional"] = {
+            "lora_path_opt": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer to use its selected LoRA"}),
+            "analysis_json": ("STRING", {"forceInput": True, "tooltip": "Optional: Connect from LoRA Analyzer for impact-colored checkboxes"}),
+            "block_weights_string": ("STRING", {
+                "multiline": True,
+                "default": "",
+                "tooltip": "Input/Output block profile string. Positional text syncs with the UI. String input overrides UI values."
+            }),
+            "save_refined_lora": ("BOOLEAN", {
+                "default": False,
+                "tooltip": "Save the exact filtered/scaled LoRA applied by this node."
+            }),
+            "save_path": ("STRING", {
+                "default": "",
+                "tooltip": "Directory where the filtered LoRA will be saved."
+            }),
+            "save_filename": ("STRING", {
+                "default": "",
+                "tooltip": "Base filename. A timestamp and .safetensors are added automatically."
+            }),
+        }
+        return inputs
+
+    RETURN_TYPES = ("MODEL", "CLIP", "STRING", "STRING")
+    RETURN_NAMES = ("model", "clip", "info", "weights_output")
+    OUTPUT_NODE = True
+    FUNCTION = "load_lora"
+    CATEGORY = "loaders/lora"
+    DESCRIPTION = """Selective LoRA loader for MiniMax H3. Toggle the 50 main packed DiT blocks on/off.
+
+Use other_weights for token-refiner and any non-main H3 tensors. Supports both native
+diffusion_model.blocks.* keys and lora_unet_blocks_* training keys."""
+
+    def load_lora(self, model, clip, lora_name, strength, preset, **kwargs):
+        lora_path_opt = kwargs.get("lora_path_opt")
+        analysis_json = kwargs.get("analysis_json")
+        block_weights_string = kwargs.get("block_weights_string", "")
+        save_refined_lora = kwargs.get("save_refined_lora", False)
+        save_path = kwargs.get("save_path", "")
+        save_filename = kwargs.get("save_filename", "")
+
+        self._analysis_json = analysis_json
+        parsed_weights = _parse_block_weights_string(block_weights_string, "MINIMAX_H3")
+        if parsed_weights:
+            enabled_blocks = set()
+            block_strengths = {}
+            other_enabled = True
+            other_str = 1.0
+            for block_name, (enabled, blk_str) in parsed_weights.items():
+                if block_name == "other_weights":
+                    other_enabled = enabled
+                    other_str = blk_str
+                elif block_name.startswith("block_") and enabled:
+                    block_num = int(block_name.split("_")[1])
+                    enabled_blocks.add(block_num)
+                    block_strengths[block_num] = blk_str
+            using_preset = "String Input"
+        elif preset != "Custom":
+            enabled_blocks = MINIMAX_H3_PRESETS[preset].copy()
+            block_strengths = {i: 1.0 for i in enabled_blocks}
+            other_enabled = preset != "All Off"
+            other_str = 1.0
+            using_preset = preset
+        else:
+            enabled_blocks = set()
+            block_strengths = {}
+            for i in range(50):
+                if kwargs.get(f"block_{i}", True):
+                    enabled_blocks.add(i)
+                    block_strengths[i] = kwargs.get(f"block_{i}_str", 1.0)
+            other_enabled = kwargs.get("other_weights", True)
+            other_str = kwargs.get("other_weights_str", 1.0)
+            using_preset = None
+
+        if lora_path_opt and os.path.exists(lora_path_opt):
+            lora_path = lora_path_opt
+        else:
+            lora_path = folder_paths.get_full_path("loras", lora_name)
+        if not lora_path or not os.path.exists(lora_path):
+            return (model, clip, "Error: LoRA not found", "")
+
+        if lora_path.endswith(".safetensors"):
+            lora_state_dict = load_file(lora_path)
+        else:
+            lora_state_dict = torch.load(lora_path, map_location="cpu")
+
+        filtered_dict = {}
+        for key, value in lora_state_dict.items():
+            block_num = _extract_block_id_minimax_h3(key)
+            if block_num is not None:
+                if block_num in enabled_blocks:
+                    blk_str = block_strengths.get(block_num, 1.0)
+                    filtered_dict[key] = value * blk_str if blk_str != 1.0 else value
+            elif other_enabled:
+                filtered_dict[key] = value * other_str if other_str != 1.0 else value
+
+        original_count = len(lora_state_dict)
+        filtered_count = len(filtered_dict)
+        if filtered_count == 0:
+            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied", "")}
+
+        saved_path = None
+        if save_refined_lora and save_path.strip():
+            saved_path = _save_minimax_h3_filtered_lora(
+                filtered_dict, lora_path, save_path, save_filename
+            )
+
+        model_lora, clip_lora = comfy.sd.load_lora_for_models(
+            model, clip, filtered_dict, strength, strength
+        )
+
+        disabled_blocks = [i for i in range(50) if i not in enabled_blocks]
+        scaled = [
+            f"{i}={block_strengths[i]:.2f}"
+            for i in sorted(enabled_blocks)
+            if block_strengths.get(i, 1.0) != 1.0
+        ]
+
+        info = f"Loaded {filtered_count}/{original_count} tensors\n"
+        info += f"Preset: {using_preset or 'Custom'}\n"
+        info += f"Enabled: {len(enabled_blocks)}/50 blocks\n"
+        info += f"Other weights: {'enabled' if other_enabled else 'disabled'}"
+        if other_enabled and other_str != 1.0:
+            info += f" ({other_str:.2f})"
+        info += "\n"
+        if scaled:
+            info += f"Scaled: {', '.join(scaled[:10])}"
+            if len(scaled) > 10:
+                info += f" (+{len(scaled)-10} more)\n"
+            else:
+                info += "\n"
+        if disabled_blocks:
+            info += f"Disabled: {', '.join(str(b) for b in disabled_blocks)}"
+        else:
+            info += "All blocks enabled"
+        if save_refined_lora:
+            if saved_path:
+                info += f"\nSaved: {saved_path}"
+            elif not save_path.strip():
+                info += "\nSave skipped: save_path is empty"
+            else:
+                info += "\nSave failed; check the ComfyUI console"
+
+        output_values = [
+            block_strengths.get(i, 0.0) if i in enabled_blocks else 0.0
+            for i in range(50)
+        ]
+        output_values.append(other_str if other_enabled else 0.0)
+        weights_output = ", ".join(f"{value:.2f}" for value in output_values)
+        return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model_lora, clip_lora, info, weights_output)}
+
+
 NODE_CLASS_MAPPINGS = {
     "SDXLSelectiveLoRALoader": SDXLSelectiveLoRALoader,
     "ZImageSelectiveLoRALoader": ZImageSelectiveLoRALoader,
@@ -1554,6 +1825,7 @@ NODE_CLASS_MAPPINGS = {
     "WanSelectiveLoRALoader": WanSelectiveLoRALoader,
     "QwenSelectiveLoRALoader": QwenSelectiveLoRALoader,
     "Krea2SelectiveLoRALoader": Krea2SelectiveLoRALoader,
+    "MiniMaxH3SelectiveLoRALoader": MiniMaxH3SelectiveLoRALoader,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -1563,4 +1835,5 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "WanSelectiveLoRALoader": "Selective LoRA Loader (Wan)",
     "QwenSelectiveLoRALoader": "Selective LoRA Loader (Qwen)",
     "Krea2SelectiveLoRALoader": "Selective LoRA Loader (Krea 2)",
+    "MiniMaxH3SelectiveLoRALoader": "Selective LoRA Loader (MiniMax H3)",
 }

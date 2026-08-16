@@ -1,7 +1,7 @@
 """
 ComfyUI Realtime LoRA Trainer
 Trains LoRAs on-the-fly from images during generation.
-Supports Z-Image, FLUX, Wan models via AI-Toolkit.
+Supports Z-Image, FLUX, Wan, and MiniMax H3 models via AI-Toolkit.
 Also supports SDXL and SD 1.5 via kohya sd-scripts.
 Includes LoRA Layer Analyzer and Selective LoRA Loader for analyzing
 and loading specific blocks/layers from LoRA files.
@@ -18,7 +18,7 @@ from .musubi_qwen_image_edit_lora_trainer import MusubiQwenImageEditLoraTrainer
 from .musubi_wan_lora_trainer import MusubiWanLoraTrainer
 from .lora_analyzer import LoRALoaderWithAnalysis
 from .lora_analyzer_v2 import NODE_CLASS_MAPPINGS as V2_NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as V2_NODE_DISPLAY_NAME_MAPPINGS
-from .selective_lora_loader import SDXLSelectiveLoRALoader, ZImageSelectiveLoRALoader, FLUXSelectiveLoRALoader, WanSelectiveLoRALoader, QwenSelectiveLoRALoader, Krea2SelectiveLoRALoader
+from .selective_lora_loader import SDXLSelectiveLoRALoader, ZImageSelectiveLoRALoader, FLUXSelectiveLoRALoader, WanSelectiveLoRALoader, QwenSelectiveLoRALoader, Krea2SelectiveLoRALoader, MiniMaxH3SelectiveLoRALoader
 from .scheduled_lora_loader import ScheduledLoRALoader
 from .model_layer_analyzer import NODE_CLASS_MAPPINGS as MODEL_LAYER_NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS as MODEL_LAYER_NODE_DISPLAY_NAME_MAPPINGS
 
@@ -57,6 +57,7 @@ NODE_CLASS_MAPPINGS = {
     "WanSelectiveLoRALoader": WanSelectiveLoRALoader,
     "QwenSelectiveLoRALoader": QwenSelectiveLoRALoader,
     "Krea2SelectiveLoRALoader": Krea2SelectiveLoRALoader,
+    "MiniMaxH3SelectiveLoRALoader": MiniMaxH3SelectiveLoRALoader,
     "ScheduledLoRALoader": ScheduledLoRALoader,
 }
 
@@ -78,6 +79,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "WanSelectiveLoRALoader": "Selective LoRA Loader (Wan)",
     "QwenSelectiveLoRALoader": "Selective LoRA Loader (Qwen)",
     "Krea2SelectiveLoRALoader": "Selective LoRA Loader (Krea 2)",
+    "MiniMaxH3SelectiveLoRALoader": "Selective LoRA Loader (MiniMax H3)",
     "ScheduledLoRALoader": "LoRA Loader (Scheduled)",
 }
 
