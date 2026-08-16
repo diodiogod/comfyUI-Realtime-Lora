@@ -395,6 +395,8 @@ def _detect_from_metadata(metadata: dict) -> str:
     # Check modelspec.architecture (newer LoRAs)
     arch = metadata.get('modelspec.architecture', '').lower()
 
+    if 'minimax' in arch or 'h3' in arch:
+        return 'MINIMAX_H3'
     if 'krea' in arch or 'krea2' in arch or 'k2' == arch:
         return 'KREA2'
 
@@ -414,6 +416,8 @@ def _detect_from_metadata(metadata: dict) -> str:
 
     # Check ss_base_model_version (Kohya format)
     base_model = metadata.get('ss_base_model_version', '').lower()
+    if 'minimax' in base_model or 'h3' in base_model:
+        return 'MINIMAX_H3'
     if 'krea' in base_model or 'krea2' in base_model:
         return 'KREA2'
     # Check Klein variants first (loose match catches *-klein-base-9b etc.)
@@ -430,6 +434,8 @@ def _detect_from_metadata(metadata: dict) -> str:
 
     # Check ss_network_module (Kohya format)
     network_module = metadata.get('ss_network_module', '').lower()
+    if 'minimax' in network_module or 'h3' in network_module:
+        return 'MINIMAX_H3'
     if 'lora_krea2' in network_module or 'krea' in network_module:
         return 'KREA2'
     if 'flux' in network_module:
@@ -443,6 +449,8 @@ def _detect_from_metadata(metadata: dict) -> str:
 
     # Check ss_sd_model_name for hints
     model_name = metadata.get('ss_sd_model_name', '').lower()
+    if 'minimax' in model_name or 'h3' in model_name:
+        return 'MINIMAX_H3'
     if 'krea' in model_name or 'krea2' in model_name:
         return 'KREA2'
     if 'flux' in model_name:
@@ -464,12 +472,28 @@ def _count_unique_blocks(keys: list) -> dict:
         'wan_blocks': set(),
         'qwen_blocks': set(),
         'krea2_blocks': set(),
+        'minimax_h3_blocks': set(),
         'sdxl_blocks': set(),
         'sd15_blocks': set(),
     }
 
     for key in keys:
         key_lower = key.lower()
+
+        # MiniMax H3 top-level packed DiT blocks (0-49). Token-refiner blocks
+        # are intentionally not counted here and remain in other_weights.
+        if re.search(
+            r'(?:^|_)lora_unet_blocks_\d+_(?:attn_qkv_proj|attn_out_proj|mlp_fc[12])',
+            key_lower,
+        ) or re.search(
+            r'(?:^|\.)(?:diffusion_model|transformer)\.blocks[._]\d+\..*(?:qkv_proj|out_proj|mlp\.fc[12])',
+            key_lower,
+        ):
+            match = re.search(r'(?:^|_)lora_unet_blocks_(\d+)_', key_lower)
+            if not match:
+                match = re.search(r'(?:^|\.)(?:diffusion_model|transformer)\.blocks[._](\d+)', key_lower)
+            if match:
+                counts['minimax_h3_blocks'].add(int(match.group(1)))
 
         # Z-Image layers (0-29)
         match = re.search(r'diffusion_model\.layers\.(\d+)', key)
@@ -546,10 +570,27 @@ def _score_architecture(keys: list, num_keys: int, block_counts: dict) -> dict:
         'WAN': 0,
         'SDXL': 0,
         'SD15': 0,
+        'MINIMAX_H3': 0,
     }
 
     keys_lower = [k.lower() for k in keys]
     keys_str = ' '.join(keys_lower)
+
+    # === MINIMAX H3 scoring ===
+    if 'minimax_h3' in keys_str:
+        scores['MINIMAX_H3'] += 80
+    if any(
+        re.search(r'(?:diffusion_model|transformer)\.blocks[._]\d+\..*(?:qkv_proj|out_proj|mlp\.fc[12])', k)
+        for k in keys_lower
+    ) or any(
+        re.search(r'lora_unet_blocks_\d+_(?:attn_qkv_proj|attn_out_proj|mlp_fc[12])', k)
+        for k in keys_lower
+    ):
+        scores['MINIMAX_H3'] += 60
+    if block_counts['minimax_h3_blocks'] == 50:
+        scores['MINIMAX_H3'] += 35
+    elif block_counts['minimax_h3_blocks'] >= 20:
+        scores['MINIMAX_H3'] += 20
 
     # === KREA2 scoring ===
     if 'lora_krea2' in keys_str or 'krea2' in keys_str or 'krea_2' in keys_str:
@@ -749,6 +790,15 @@ def _extract_block_id_v2(key: str, architecture: str) -> str:
     if architecture == 'QWEN_IMAGE':
         match = re.search(r'transformer_blocks[._](\d+)', key)
         return f"block_{match.group(1)}" if match else 'other'
+
+    elif architecture == 'MINIMAX_H3':
+        match = re.search(r'(?:^|_)lora_unet_blocks_(\d+)_', key_lower)
+        if match:
+            return f"block_{match.group(1)}"
+        match = re.search(r'(?:^|\.)(?:diffusion_model|transformer)\.blocks[._](\d+)', key_lower)
+        if match:
+            return f"block_{match.group(1)}"
+        return 'other'
 
     elif architecture == 'KREA2':
         if any(part in key_lower for part in ['txtfusion', 'txtmlp', 'tmlp', 'tproj', 'first', 'last']):
@@ -1420,6 +1470,37 @@ Supports strength scheduling format: 0:.2,.5:.8,1:1.0""",
             "Custom": None,
         },
     },
+    "MINIMAX_H3": {
+        "node_id": "MiniMaxH3AnalyzerSelectiveLoaderV2",
+        "display_name": "MiniMax H3 Analyzer + Selective Loader V2",
+        "description": """Combined analyzer and selective loader for MiniMax H3 LoRAs.
+Analyzes LoRA impact and allows per-block control with strength shaping.
+
+Block Guide (50 main packed DiT blocks):
+- block_0-12: Early DiT blocks
+- block_13-37: Middle DiT blocks
+- block_38-49: Late DiT blocks
+
+Token-refiner and other non-main H3 tensors are controlled by other_weights.
+Supports strength scheduling format: 0:.2,.5:.8,1:1.0""",
+        "architecture": "MINIMAX_H3",
+        "blocks": [f"block_{i}" for i in range(50)] + ["other_weights"],
+        "block_labels": {f"block_{i}": f"DiT Block {i}" for i in range(50)} |
+                        {"other_weights": "Other Weights"},
+        "presets": {
+            "Default": {"enabled": "ALL", "strength": 1.0},
+            "All Off": {"enabled": [], "strength": 0.0},
+            "Half Strength": {"enabled": "ALL", "strength": 0.5},
+            "Late Only (38-49)": {"enabled": [f"block_{i}" for i in range(38, 50)] + ["other_weights"], "strength": 1.0},
+            "Mid-Late (25-49)": {"enabled": [f"block_{i}" for i in range(25, 50)] + ["other_weights"], "strength": 1.0},
+            "Skip Early (13-49)": {"enabled": [f"block_{i}" for i in range(13, 50)] + ["other_weights"], "strength": 1.0},
+            "Mid Only (17-32)": {"enabled": [f"block_{i}" for i in range(17, 33)], "strength": 1.0},
+            "Early Only (0-16)": {"enabled": [f"block_{i}" for i in range(17)], "strength": 1.0},
+            "Evens Only": {"enabled": [f"block_{i}" for i in range(0, 50, 2)], "strength": 1.0},
+            "Odds Only": {"enabled": [f"block_{i}" for i in range(1, 50, 2)], "strength": 1.0},
+            "Custom": None,
+        },
+    },
     "WAN": {
         "node_id": "WanAnalyzerSelectiveLoaderV2",
         "display_name": "Wan Analyzer + Selective Loader V2",
@@ -1817,7 +1898,7 @@ def _create_combined_node_class(config: dict):
                 for block in blocks
                 if block != "other_weights"
             ]
-            if architecture == "KREA2":
+            if architecture in ("KREA2", "MINIMAX_H3"):
                 output_values.append(other_strength if other_enabled else 0.0)
             weights_output = ", ".join(f"{value:.2f}" for value in output_values)
 
