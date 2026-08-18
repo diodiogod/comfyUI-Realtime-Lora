@@ -347,6 +347,28 @@ def _extract_block_id_minimax_h3(key: str) -> Optional[int]:
     return None
 
 
+def _scale_minimax_h3_tensor(key: str, value, strength: float):
+    """Scale one LoRA factor so a block strength stays linear and signed."""
+    if strength == 1.0:
+        return value
+
+    key_lower = key.lower()
+    if key_lower.endswith((".alpha", ".dora_scale", ".reshape_weight")):
+        return value
+
+    # ComfyUI multiplies the two LoRA factors together at load time. Scaling
+    # only the output/up factor avoids turning a 0.5 weight into 0.25 and
+    # preserves negative block strengths.
+    is_output_factor = (
+        re.search(r"(?:^|[._])lora_(?:up|b)(?:\.default)?(?:\.weight)?$", key_lower)
+        or re.search(r"(?:^|[._])lora\.up(?:\.weight)?$", key_lower)
+        or key_lower.endswith(".lora_linear_layer.up.weight")
+        or "lokr_w1" in key_lower
+        or "hada_w1" in key_lower
+    )
+    return value * strength if is_output_factor else value
+
+
 def _save_krea2_filtered_lora(
     filtered_lora: dict,
     source_path: str,
@@ -1837,14 +1859,23 @@ diffusion_model.blocks.* keys and lora_unet_blocks_* training keys."""
             if block_num is not None:
                 if block_num in enabled_blocks:
                     blk_str = block_strengths.get(block_num, 1.0)
-                    filtered_dict[key] = value * blk_str if blk_str != 1.0 else value
+                    filtered_dict[key] = _scale_minimax_h3_tensor(key, value, blk_str)
             elif other_enabled:
-                filtered_dict[key] = value * other_str if other_str != 1.0 else value
+                filtered_dict[key] = _scale_minimax_h3_tensor(key, value, other_str)
 
         original_count = len(lora_state_dict)
         filtered_count = len(filtered_dict)
         if filtered_count == 0:
-            return {"ui": {"analysis_json": [analysis_json or ""]}, "result": (model, clip, "Warning: All blocks disabled, no LoRA applied", "")}
+            output_values = [
+                block_strengths.get(i, 0.0) if i in enabled_blocks else 0.0
+                for i in range(50)
+            ]
+            output_values.append(other_str if other_enabled else 0.0)
+            weights_output = ", ".join(f"{value:.2f}" for value in output_values)
+            return {
+                "ui": {"analysis_json": [analysis_json or ""]},
+                "result": (model, clip, "Warning: All blocks disabled, no LoRA applied", weights_output),
+            }
 
         saved_path = None
         if save_refined_lora and save_path.strip():

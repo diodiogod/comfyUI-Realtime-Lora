@@ -326,6 +326,7 @@ const SELECTIVE_LOADER_PRESETS = {
         blocks: [...Array.from({length: 50}, (_, i) => `block_${i}`), "other_weights"],
         presets: {
             "Default": { enabled: "ALL", strength: 1.0 },
+            "All Blocks": { enabled: "ALL", strength: 1.0 },
             "All Off": { enabled: [], strength: 0.0 },
             "Half Strength": { enabled: "ALL", strength: 0.5 },
             "Late Only (38-49)": { enabled: [...Array.from({length: 12}, (_, i) => `block_${i + 38}`), "other_weights"], strength: 1.0 },

@@ -1,7 +1,8 @@
 """
 ComfyUI Realtime LoRA Trainer
 Trains LoRAs on-the-fly from images during generation.
-Supports Z-Image, FLUX, Wan, and MiniMax H3 models via AI-Toolkit.
+Supports Z-Image, FLUX, and Wan model workflows via AI-Toolkit, plus
+MiniMax H3 LoRA block tooling.
 Also supports SDXL and SD 1.5 via kohya sd-scripts.
 Includes LoRA Layer Analyzer and Selective LoRA Loader for analyzing
 and loading specific blocks/layers from LoRA files.
