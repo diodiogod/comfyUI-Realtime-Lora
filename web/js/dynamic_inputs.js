@@ -974,7 +974,9 @@ app.registerExtension({
                 gap: 6,
                 min: strength.options?.min ?? -2.0,
                 max: strength.options?.max ?? 2.0,
-                step: strength.options?.step ?? 0.05,
+                // ComfyUI can expose stale widget metadata here; block values
+                // are declared in 0.05 increments across the selective loaders.
+                step: 0.05,
                 getLayout: function(widgetWidth) {
                     const sliderWidth = widgetWidth - this.margin - this.checkboxSize - this.gap - this.labelWidth - this.gap - this.valueWidth - this.margin - this.gap;
                     const checkboxX = this.margin;
