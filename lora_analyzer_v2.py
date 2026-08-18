@@ -1577,6 +1577,10 @@ def _filter_lora_by_blocks(lora_state_dict: dict, enabled_blocks: set, block_str
     # Detect LoRA type once for the whole dict
     keys = list(lora_state_dict.keys())
     lora_type = _detect_lora_type(keys)
+    scale_minimax_h3_tensor = None
+    if architecture == 'MINIMAX_H3':
+        from .selective_lora_loader import _scale_minimax_h3_tensor
+        scale_minimax_h3_tensor = _scale_minimax_h3_tensor
 
     for key, value in lora_state_dict.items():
         block_id = _extract_block_id_v2(key, architecture)
@@ -1598,13 +1602,19 @@ def _filter_lora_by_blocks(lora_state_dict: dict, enabled_blocks: set, block_str
         if block_id == 'other':
             if other_enabled:
                 if other_strength != 1.0 and should_scale:
-                    filtered_dict[key] = value * other_strength
+                    filtered_dict[key] = (
+                        scale_minimax_h3_tensor(key, value, other_strength)
+                        if scale_minimax_h3_tensor else value * other_strength
+                    )
                 else:
                     filtered_dict[key] = value
         elif block_id in enabled_blocks:
             strength = block_strengths.get(block_id, 1.0)
             if strength != 1.0 and should_scale:
-                filtered_dict[key] = value * strength
+                filtered_dict[key] = (
+                    scale_minimax_h3_tensor(key, value, strength)
+                    if scale_minimax_h3_tensor else value * strength
+                )
             else:
                 filtered_dict[key] = value
 
