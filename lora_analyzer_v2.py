@@ -1812,11 +1812,14 @@ def _create_combined_node_class(config: dict):
             if saved_path:
                 info_lines.append(f"Saved: {os.path.basename(saved_path)}")
 
-            weights_output = ", ".join(
-                f"{(block_strengths.get(block, 0.0) if block in enabled_blocks else 0.0):.2f}"
+            output_values = [
+                block_strengths.get(block, 0.0) if block in enabled_blocks else 0.0
                 for block in blocks
                 if block != "other_weights"
-            )
+            ]
+            if architecture == "KREA2":
+                output_values.append(other_strength if other_enabled else 0.0)
+            weights_output = ", ".join(f"{value:.2f}" for value in output_values)
 
             return {"ui": {"analysis_json": [analysis_json]}, "result": (model_out, positive_out, negative_out, "\n".join(info_lines), analysis_json, weights_output)}
 
