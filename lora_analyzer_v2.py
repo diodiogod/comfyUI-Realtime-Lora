@@ -1726,6 +1726,10 @@ def _create_combined_node_class(config: dict):
             blocks = cfg["blocks"]
             presets = cfg["presets"]
 
+            if architecture == "MINIMAX_H3":
+                from .selective_lora_loader import _coerce_scalar_strength
+                strength = _coerce_scalar_strength(strength)
+
             # Get LoRA path - use optional override if provided
             if lora_path_opt and os.path.exists(lora_path_opt):
                 lora_path = lora_path_opt
