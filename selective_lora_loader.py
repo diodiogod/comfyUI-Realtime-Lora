@@ -1711,7 +1711,7 @@ class MiniMaxH3SelectiveLoRALoader:
             "block_weights_string": ("STRING", {
                 "multiline": True,
                 "default": "",
-                "tooltip": "Input/Output block profile string. Positional text syncs with the UI. String input overrides UI values."
+                "tooltip": "Optional positional or named block profile. A connected string overrides the individual controls."
             }),
             "save_refined_lora": ("BOOLEAN", {
                 "default": False,
