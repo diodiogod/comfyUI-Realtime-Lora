@@ -347,8 +347,25 @@ def _extract_block_id_minimax_h3(key: str) -> Optional[int]:
     return None
 
 
+def _coerce_scalar_strength(value) -> float:
+    """Normalize a ComfyUI strength input before it reaches the LoRA patcher."""
+    if isinstance(value, torch.Tensor):
+        if value.numel() != 1:
+            raise ValueError("Overall LoRA strength must be a single number")
+        value = value.item()
+    elif isinstance(value, (list, tuple)):
+        if len(value) != 1:
+            raise ValueError("Overall LoRA strength must be a single number")
+        value = value[0]
+    try:
+        return float(value)
+    except (TypeError, ValueError) as error:
+        raise ValueError("Overall LoRA strength must be a single number") from error
+
+
 def _scale_minimax_h3_tensor(key: str, value, strength: float):
     """Scale one LoRA factor so a block strength stays linear and signed."""
+    strength = _coerce_scalar_strength(strength)
     if strength == 1.0:
         return value
 
@@ -1801,6 +1818,7 @@ Use other_weights for token-refiner and any non-main H3 tensors. Supports both n
 diffusion_model.blocks.* keys and lora_unet_blocks_* training keys."""
 
     def load_lora(self, model, clip, lora_name, strength, preset, **kwargs):
+        strength = _coerce_scalar_strength(strength)
         lora_path_opt = kwargs.get("lora_path_opt")
         analysis_json = kwargs.get("analysis_json")
         block_weights_string = kwargs.get("block_weights_string", "")
