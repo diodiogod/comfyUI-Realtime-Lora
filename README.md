@@ -215,6 +215,7 @@ Search for these in ComfyUI:
 - **Selective LoRA Loader (Wan)** - Load Wan LoRAs with per-block toggles (40 blocks)
 - **Selective LoRA Loader (Qwen)** - Load Qwen LoRAs with per-block toggles (60 blocks)
 - **Selective LoRA Loader (Krea 2)** - Load Krea 2 LoRAs with per-block toggles (28 main blocks)
+- **Selective LoRA Loader (MiniMax H3)** - Load MiniMax H3 LoRAs with per-block toggles (50 main DiT blocks)
 
 **V2 Combined Analyzer + Selective Loader (Recommended):**
 
@@ -226,6 +227,7 @@ These combine analysis and selective loading in one node, with strength scheduli
 - **Wan Analyzer + Selective Loader V2** - 40 blocks with strength scheduling
 - **Qwen Analyzer + Selective Loader V2** - 60 blocks with strength scheduling
 - **Krea 2 Analyzer + Selective Loader V2** - 28 main blocks with strength scheduling
+- **MiniMax H3 Analyzer + Selective Loader V2** - 50 main DiT blocks with strength scheduling
 - **FLUX Klein 4B Analyzer + Selective Loader V2** - 25 blocks (5 double + 20 single) with strength scheduling
 - **FLUX Klein 9B Analyzer + Selective Loader V2** - 32 blocks (8 double + 24 single) with strength scheduling
 - **LoRA Loader + Analyzer V2** - Basic V2 analyzer without selective loading

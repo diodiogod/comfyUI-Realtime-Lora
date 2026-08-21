@@ -322,6 +322,22 @@ const SELECTIVE_LOADER_PRESETS = {
             "Odds Only": { enabled: Array.from({length: 14}, (_, i) => `block_${i * 2 + 1}`), strength: 1.0 },
         }
     },
+    "MiniMaxH3SelectiveLoRALoader": {
+        blocks: [...Array.from({length: 50}, (_, i) => `block_${i}`), "other_weights"],
+        presets: {
+            "Default": { enabled: "ALL", strength: 1.0 },
+            "All Blocks": { enabled: "ALL", strength: 1.0 },
+            "All Off": { enabled: [], strength: 0.0 },
+            "Half Strength": { enabled: "ALL", strength: 0.5 },
+            "Late Only (38-49)": { enabled: [...Array.from({length: 12}, (_, i) => `block_${i + 38}`), "other_weights"], strength: 1.0 },
+            "Mid-Late (25-49)": { enabled: [...Array.from({length: 25}, (_, i) => `block_${i + 25}`), "other_weights"], strength: 1.0 },
+            "Skip Early (13-49)": { enabled: [...Array.from({length: 37}, (_, i) => `block_${i + 13}`), "other_weights"], strength: 1.0 },
+            "Mid Only (17-32)": { enabled: [...Array.from({length: 16}, (_, i) => `block_${i + 17}`)], strength: 1.0 },
+            "Early Only (0-16)": { enabled: [...Array.from({length: 17}, (_, i) => `block_${i}`)], strength: 1.0 },
+            "Evens Only": { enabled: Array.from({length: 25}, (_, i) => `block_${i * 2}`), strength: 1.0 },
+            "Odds Only": { enabled: Array.from({length: 25}, (_, i) => `block_${i * 2 + 1}`), strength: 1.0 },
+        }
+    },
     // V2 Combined Analyzer + Selective Loaders
     "ZImageAnalyzerSelectiveLoaderV2": {
         blocks: [...Array.from({length: 30}, (_, i) => `layer_${i}`), "context_refiner", "noise_refiner", "final_layer", "x_embedder", "other_weights"],
@@ -427,6 +443,21 @@ const SELECTIVE_LOADER_PRESETS = {
             "Early Only (0-8)": { enabled: Array.from({length: 9}, (_, i) => `block_${i}`), strength: 1.0 },
             "Evens Only": { enabled: Array.from({length: 14}, (_, i) => `block_${i * 2}`), strength: 1.0 },
             "Odds Only": { enabled: Array.from({length: 14}, (_, i) => `block_${i * 2 + 1}`), strength: 1.0 },
+        }
+    },
+    "MiniMaxH3AnalyzerSelectiveLoaderV2": {
+        blocks: [...Array.from({length: 50}, (_, i) => `block_${i}`), "other_weights"],
+        presets: {
+            "Default": { enabled: "ALL", strength: 1.0 },
+            "All Off": { enabled: [], strength: 0.0 },
+            "Half Strength": { enabled: "ALL", strength: 0.5 },
+            "Late Only (38-49)": { enabled: [...Array.from({length: 12}, (_, i) => `block_${i + 38}`), "other_weights"], strength: 1.0 },
+            "Mid-Late (25-49)": { enabled: [...Array.from({length: 25}, (_, i) => `block_${i + 25}`), "other_weights"], strength: 1.0 },
+            "Skip Early (13-49)": { enabled: [...Array.from({length: 37}, (_, i) => `block_${i + 13}`), "other_weights"], strength: 1.0 },
+            "Mid Only (17-32)": { enabled: [...Array.from({length: 16}, (_, i) => `block_${i + 17}`)], strength: 1.0 },
+            "Early Only (0-16)": { enabled: [...Array.from({length: 17}, (_, i) => `block_${i}`)], strength: 1.0 },
+            "Evens Only": { enabled: Array.from({length: 25}, (_, i) => `block_${i * 2}`), strength: 1.0 },
+            "Odds Only": { enabled: Array.from({length: 25}, (_, i) => `block_${i * 2 + 1}`), strength: 1.0 },
         }
     },
     // FLUX Klein 4B (5 double + 20 single blocks)
@@ -547,6 +578,7 @@ app.registerExtension({
             "WanSelectiveLoRALoader",
             "QwenSelectiveLoRALoader",
             "Krea2SelectiveLoRALoader",
+            "MiniMaxH3SelectiveLoRALoader",
             // V2 Combined Analyzer + Selective Loaders
             "ZImageAnalyzerSelectiveLoaderV2",
             "SDXLAnalyzerSelectiveLoaderV2",
@@ -554,6 +586,7 @@ app.registerExtension({
             "WanAnalyzerSelectiveLoaderV2",
             "QwenAnalyzerSelectiveLoaderV2",
             "Krea2AnalyzerSelectiveLoaderV2",
+            "MiniMaxH3AnalyzerSelectiveLoaderV2",
             "FluxKlein4BAnalyzerSelectiveLoaderV2",
             "FluxKlein9BAnalyzerSelectiveLoaderV2",
             // Model Layer Editor nodes (base model per-block control)
